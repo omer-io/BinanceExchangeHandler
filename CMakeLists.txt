@@ -15,6 +15,6 @@ include(cmake-modules/boostConfig.cmake)
 # endforeach()
 
 
-add_executable(main app/main.cpp)
+add_executable(main app/samplehttp.cpp)
 
 
