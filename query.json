@@ -1,0 +1,26 @@
+{
+    "query":[
+      {
+        "id": 1287,
+        "query_type": "GET",
+        "market_type": "SPOT",
+        "instrument_name": "ETHBTC"
+      },
+      {
+        "id": 333,
+        "query_type": "UPDATE",
+        "market_type": "usd_futures",
+        "instrument_name": "BLZUSDT",
+        "data": { 
+            "status": "pending" 
+        }
+      },
+      {
+        "id": 785,
+        "query_type": "DELETE",
+        "market_type": "coin_futures",
+        "instrument_name": "BTCUSD"
+      }
+    ]
+}
+
