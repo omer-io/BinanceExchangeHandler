@@ -4,11 +4,15 @@
         "file": true,
         "console": true
     },
-    "exchange_info_uri": "https://api.binance.com",
+    "exchange_base_url": {
+        "spot_exchange_info_base_uri": "api.binance.com",
+        "usd_futures_exchange_info_base_uri": "dapi.binance.com",
+        "coin_futures_exchange_info_base_uri": "fapi.binance.com"
+    },
     "exchange_endpoints": {
         "spot_exchange_info_uri": "/api/v3/exchangeInfo",
-        "usd_futures_exchange_info_uri": "",
-        "coin_futures_exchange_info_uri": ""
+        "usd_futures_exchange_info_uri": "/dapi/v1/exchangeInfo",
+        "coin_futures_exchange_info_uri": "/fapi/v1/exchangeInfo"
     },
     "request_interval": 60
  }
