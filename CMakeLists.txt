@@ -22,7 +22,7 @@ link_libraries(${OPENSSL_LIBRARIES})
 
 include_directories(include)
 
-add_executable(main app/main.cpp)
+add_executable(main app/main.cpp src/getApiData.cpp)
 
 # add_executable(https app/https.cpp)
 
