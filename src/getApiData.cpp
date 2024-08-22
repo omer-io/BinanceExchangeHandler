@@ -28,7 +28,6 @@ void spotData(std::string spotBaseUrl, std::string spotEndpoint) {
     
     // The io_context is required for all I/O
     net::io_context ioc;
-    net::deadline_timer spotExchangeTimer(ioc, boost::posix_time::seconds(5));
 
     // The SSL context is required, and holds certificates
     ssl::context ctx{ssl::context::tlsv12_client};
@@ -82,16 +81,16 @@ void spotData(std::string spotBaseUrl, std::string spotEndpoint) {
         binanceExchange.spotSymbols[info.symbol] = info;
     }
 
-    for (const auto& pair : binanceExchange.spotSymbols) {
-        const auto& symbolInfo = pair.second; 
+    // for (const auto& pair : binanceExchange.spotSymbols) {
+    //     const auto& symbolInfo = pair.second; 
 
-        std::cout << "Symbol: " << symbolInfo.symbol << std::endl;
-        std::cout << "Quote Asset: " << symbolInfo.quoteAsset << std::endl;
-        std::cout << "Status: " << symbolInfo.status << std::endl;
-        std::cout << "Tick Size: " << symbolInfo.tickSize << std::endl;
-        std::cout << "Step Size: " << symbolInfo.stepSize << std::endl;
-        std::cout << "---------------------" << std::endl;
-    }
+    //     std::cout << "Symbol: " << symbolInfo.symbol << std::endl;
+    //     std::cout << "Quote Asset: " << symbolInfo.quoteAsset << std::endl;
+    //     std::cout << "Status: " << symbolInfo.status << std::endl;
+    //     std::cout << "Tick Size: " << symbolInfo.tickSize << std::endl;
+    //     std::cout << "Step Size: " << symbolInfo.stepSize << std::endl;
+    //     std::cout << "---------------------" << std::endl;
+    // }
 
     std::cout << "Total symbols: " << binanceExchange.spotSymbols.size() << std::endl;
 
@@ -149,16 +148,16 @@ void usdFutureData(std::string usdFutureBaseUrl, std::string usdFutureEndpoint) 
         binanceExchange.usdSymbols[info.symbol] = info;
     }
 
-    for (const auto& pair : binanceExchange.usdSymbols) {
-        const auto& symbolInfo = pair.second; 
+    // for (const auto& pair : binanceExchange.usdSymbols) {
+    //     const auto& symbolInfo = pair.second; 
 
-        std::cout << "Symbol: " << symbolInfo.symbol << std::endl;
-        std::cout << "Quote Asset: " << symbolInfo.quoteAsset << std::endl;
-        std::cout << "Status: " << symbolInfo.status << std::endl;
-        std::cout << "Tick Size: " << symbolInfo.tickSize << std::endl;
-        std::cout << "Step Size: " << symbolInfo.stepSize << std::endl;
-        std::cout << "---------------------" << std::endl;
-    }
+    //     std::cout << "Symbol: " << symbolInfo.symbol << std::endl;
+    //     std::cout << "Quote Asset: " << symbolInfo.quoteAsset << std::endl;
+    //     std::cout << "Status: " << symbolInfo.status << std::endl;
+    //     std::cout << "Tick Size: " << symbolInfo.tickSize << std::endl;
+    //     std::cout << "Step Size: " << symbolInfo.stepSize << std::endl;
+    //     std::cout << "---------------------" << std::endl;
+    // }
 
     std::cout << "Total symbols: " << binanceExchange.usdSymbols.size() << std::endl;
 
@@ -217,16 +216,16 @@ void coinFutureData(std::string coinFutureBaseUrl, std::string coinFutureEndpoin
         binanceExchange.coinSymbols[info.symbol] = info;
     }
 
-    for (const auto& pair : binanceExchange.coinSymbols) {
-        const auto& symbolInfo = pair.second; 
+    // for (const auto& pair : binanceExchange.coinSymbols) {
+    //     const auto& symbolInfo = pair.second; 
 
-        std::cout << "Symbol: " << symbolInfo.symbol << std::endl;
-        std::cout << "Quote Asset: " << symbolInfo.quoteAsset << std::endl;
-        std::cout << "Status: " << symbolInfo.status << std::endl;
-        std::cout << "Tick Size: " << symbolInfo.tickSize << std::endl;
-        std::cout << "Step Size: " << symbolInfo.stepSize << std::endl;
-        std::cout << "---------------------" << std::endl;
-    }
+    //     std::cout << "Symbol: " << symbolInfo.symbol << std::endl;
+    //     std::cout << "Quote Asset: " << symbolInfo.quoteAsset << std::endl;
+    //     std::cout << "Status: " << symbolInfo.status << std::endl;
+    //     std::cout << "Tick Size: " << symbolInfo.tickSize << std::endl;
+    //     std::cout << "Step Size: " << symbolInfo.stepSize << std::endl;
+    //     std::cout << "---------------------" << std::endl;
+    // }
 
     std::cout << "Total symbols: " << binanceExchange.coinSymbols.size() << std::endl;
 
