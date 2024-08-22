@@ -11,6 +11,7 @@
 void spotData(std::string, std::string);
 void usdFutureData(std::string, std::string);
 void coinFutureData(std::string, std::string);
+void readQuery();
 
 // global variables
 std::string spot_exchange_info_base_uri, usd_futures_exchange_info_base_uri, coin_futures_exchange_info_base_uri;
@@ -42,36 +43,13 @@ void readConfig(std::string configFile, rapidjson::Document &doc) {
 
 }
 
-void readQuery(std::string queryFile, rapidjson::Document &doc) {
 
-    FILE* fp = fopen(queryFile.c_str(), "r"); 
-    if (!fp) { 
-        std::cerr << "Error: unable to open file" << std::endl; 
-    } 
-
-    char buffer[65536];
-    rapidjson::FileReadStream is(fp, buffer, sizeof(buffer));
-
-    doc.ParseStream(is);
-
-    spot_exchange_info_base_uri = doc["exchange_base_url"]["spot_exchange_info_base_uri"].GetString();
-    usd_futures_exchange_info_base_uri = doc["exchange_base_url"]["usd_futures_exchange_info_base_uri"].GetString();
-    coin_futures_exchange_info_base_uri = doc["exchange_base_url"]["coin_futures_exchange_info_base_uri"].GetString();
-
-    spot_exchange_info_uri = doc["exchange_endpoints"]["spot_exchange_info_uri"].GetString();
-    usd_futures_exchange_info_uri = doc["exchange_endpoints"]["usd_futures_exchange_info_uri"].GetString();
-    coin_futures_exchange_info_uri = doc["exchange_endpoints"]["coin_futures_exchange_info_uri"].GetString();
-    request_interval = doc["request_interval"].GetInt();
-
-    fclose(fp); 
-
-}
 
 void fetchAll(const boost::system::error_code& /*e*/, boost::asio::steady_timer* t){
     std::thread spotThread (spotData, spot_exchange_info_base_uri, spot_exchange_info_uri);
     std::thread usdFutureThread (usdFutureData, usd_futures_exchange_info_base_uri, usd_futures_exchange_info_uri);
     std::thread coinFutureThread (coinFutureData, coin_futures_exchange_info_base_uri, coin_futures_exchange_info_uri);
- 
+
     spotThread.join();
     usdFutureThread.join();
     coinFutureThread.join();
@@ -99,15 +77,18 @@ int main() {
     std::cout << "Coin Futures Exchange Info URI: " << coin_futures_exchange_info_uri << std::endl;
     std::cout << "Request Interval: " << request_interval << " seconds" << std::endl;
 
-    //std::thread queryThread
-    boost::asio::io_context io;
-    boost::asio::steady_timer t(io, boost::asio::chrono::seconds(20));
+    readQuery();
+    // //std::thread queryThread
+    // boost::asio::io_context io;
+    // boost::asio::steady_timer t(io, boost::asio::chrono::seconds(20));
 
-    t.async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, &t));
-    io.run();
-    // std::thread ioThread(runIoContext, std::ref(io));
-    //     std::cout << "hello";
-    // ioThread.join();
+    // t.async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, &t));
+
+    // io.run();
+
+    // // std::thread ioThread(runIoContext, std::ref(io));
+    // //     std::cout << "hello";
+    // // ioThread.join();
 
 
     return 0;

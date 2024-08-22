@@ -1,6 +1,7 @@
 
 #include "https.h"
 #include <rapidjson/document.h>
+#include <rapidjson/filereadstream.h>
 #include <vector>
 #include <map>
 struct symbolInfo{
@@ -230,3 +231,61 @@ void coinFutureData(std::string coinFutureBaseUrl, std::string coinFutureEndpoin
     std::cout << "Total symbols: " << binanceExchange.coinSymbols.size() << std::endl;
 
 }
+
+void spotQuery(std::string& spotQuerySymbol, std::string& spotQueryType){
+    if(spotQueryType == "GET"){
+        std::cout << "Getting spot data for " << spotQuerySymbol << std::endl;
+        symbolInfo temp = binanceExchange.spotSymbols[spotQuerySymbol];
+        std::cout << "Symbol: " << temp.symbol << std::endl;
+        std::cout << "Quote Asset: " << temp.quoteAsset << std::endl;
+        std::cout << "Status: " << temp.status << std::endl;
+        std::cout << "Tick Size: " << temp.tickSize << std::endl;
+        std::cout << "Step Size: " << temp.stepSize << std::endl;
+        std::cout << "---------------------" << std::endl;
+    }
+}
+
+void readQuery() {
+
+    int queryID;
+    std::string queryType, queryMarket, querySymbol, status;
+
+    rapidjson::Document doc;
+    std::string queryFile = "/home/omer/training/BinanceExchangeHandler/query.json";
+    FILE* fp = fopen(queryFile.c_str(), "r"); 
+    if (!fp) { 
+        std::cerr << "Error: unable to open file" << std::endl; 
+    } 
+
+    char buffer[65536];
+    rapidjson::FileReadStream is(fp, buffer, sizeof(buffer));
+
+    doc.ParseStream(is);
+
+    for (rapidjson::Value::ConstValueIterator itr = doc["query"].Begin(); itr != doc["query"].End(); ++itr) {
+        int queryID = (*itr)["id"].GetInt();
+        std::string queryType = (*itr)["query_type"].GetString();
+        std::string queryMarket = (*itr)["market_type"].GetString();
+        std::string querySymbol = (*itr)["instrument_name"].GetString();
+
+        std::cout << "Query ID: " << queryID << std::endl;
+        std::cout << "Query Type: " << queryType << std::endl;
+        std::cout << "Market Type: " << queryMarket << std::endl;
+        std::cout << "Instrument Name: " << querySymbol << std::endl;
+
+        if (itr->HasMember("data")) {
+            if ((*itr)["data"].HasMember("status")) {
+                status = (*itr)["data"]["status"].GetString();
+                std::cout << "Status: " << status << std::endl;
+            }
+        }
+
+        if(queryMarket == "SPOT"){
+            spotQuery(querySymbol, queryType);
+        }
+    }
+
+    fclose(fp); 
+
+}
+
