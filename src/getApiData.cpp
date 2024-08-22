@@ -4,6 +4,7 @@
 #include <rapidjson/filereadstream.h>
 #include <vector>
 #include <map>
+#include <thread>
 struct symbolInfo{
     std::string symbol;
     std::string quoteAsset;
@@ -232,7 +233,7 @@ void coinFutureData(std::string coinFutureBaseUrl, std::string coinFutureEndpoin
 
 }
 
-void spotQuery(std::string& spotQuerySymbol, std::string& spotQueryType){
+void spotQuery(std::string spotQuerySymbol, std::string spotQueryType, std::string spotQueryStatus){
     if(spotQueryType == "GET"){
         std::cout << "Getting spot data for " << spotQuerySymbol << std::endl;
         symbolInfo temp = binanceExchange.spotSymbols[spotQuerySymbol];
@@ -243,12 +244,34 @@ void spotQuery(std::string& spotQuerySymbol, std::string& spotQueryType){
         std::cout << "Step Size: " << temp.stepSize << std::endl;
         std::cout << "---------------------" << std::endl;
     }
+
+    else if(spotQueryType == "UPDATE"){
+        std::cout << "Updating spot data for " << spotQuerySymbol << std::endl;
+        std::cout << binanceExchange.spotSymbols[spotQuerySymbol].status << std::endl;
+        binanceExchange.spotSymbols[spotQuerySymbol].status = spotQueryStatus;
+        std::cout << binanceExchange.spotSymbols[spotQuerySymbol].status << std::endl;
+
+    }
+
+    else if(spotQueryType == "DELETE"){
+        std::cout << "Deleting spot data for " << spotQuerySymbol << std::endl;
+        std::cout << binanceExchange.spotSymbols[spotQuerySymbol].symbol << std::endl;
+        auto it = binanceExchange.spotSymbols.find(spotQuerySymbol);
+        if (it != binanceExchange.spotSymbols.end()) {
+            binanceExchange.spotSymbols.erase(it);
+            std::cout << "Deleted symbol " << spotQuerySymbol << std::endl;
+        } 
+        else {
+            std::cout << "Symbol " << spotQuerySymbol << " not found." << std::endl;
+        }
+        std::cout << "deletion" << binanceExchange.spotSymbols[spotQuerySymbol].symbol << std::endl;
+    }
 }
 
 void readQuery() {
 
     int queryID;
-    std::string queryType, queryMarket, querySymbol, status;
+    std::string queryType, queryMarket, querySymbol, queryStatus;
 
     rapidjson::Document doc;
     std::string queryFile = "/home/omer/training/BinanceExchangeHandler/query.json";
@@ -275,14 +298,17 @@ void readQuery() {
 
         if (itr->HasMember("data")) {
             if ((*itr)["data"].HasMember("status")) {
-                status = (*itr)["data"]["status"].GetString();
-                std::cout << "Status: " << status << std::endl;
+                queryStatus = (*itr)["data"]["status"].GetString();
+                std::cout << "Status: " << queryStatus << std::endl;
             }
         }
 
         if(queryMarket == "SPOT"){
-            spotQuery(querySymbol, queryType);
+            std::thread spotQueryThread (spotQuery, querySymbol, queryType, queryStatus);
+            spotQueryThread.join();
         }
+
+
     }
 
     fclose(fp); 

@@ -59,6 +59,15 @@ void fetchAll(const boost::system::error_code& /*e*/, boost::asio::steady_timer*
 
     
 }
+void fetchAllNoIO(){
+    std::thread spotThread (spotData, spot_exchange_info_base_uri, spot_exchange_info_uri);
+    std::thread usdFutureThread (usdFutureData, usd_futures_exchange_info_base_uri, usd_futures_exchange_info_uri);
+    std::thread coinFutureThread (coinFutureData, coin_futures_exchange_info_base_uri, coin_futures_exchange_info_uri);
+
+    spotThread.join();
+    usdFutureThread.join();
+    coinFutureThread.join();    
+}
 // run ioc.run() in a thread
 // void runIoContext(boost::asio::io_context& io) {
 //     io.run();
@@ -77,8 +86,9 @@ int main() {
     std::cout << "Coin Futures Exchange Info URI: " << coin_futures_exchange_info_uri << std::endl;
     std::cout << "Request Interval: " << request_interval << " seconds" << std::endl;
 
+    fetchAllNoIO();
     readQuery();
-    // //std::thread queryThread
+    // // //std::thread queryThread
     // boost::asio::io_context io;
     // boost::asio::steady_timer t(io, boost::asio::chrono::seconds(20));
 
@@ -86,9 +96,9 @@ int main() {
 
     // io.run();
 
-    // // std::thread ioThread(runIoContext, std::ref(io));
-    // //     std::cout << "hello";
-    // // ioThread.join();
+    // // // std::thread ioThread(runIoContext, std::ref(io));
+    // // //     std::cout << "hello";
+    // // // ioThread.join();
 
 
     return 0;
