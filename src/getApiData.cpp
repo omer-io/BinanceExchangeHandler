@@ -1,7 +1,8 @@
 
 #include "https.h"
 #include <rapidjson/document.h>
-
+#include <vector>
+#include <map>
 struct symbolInfo{
     std::string symbol;
     std::string quoteAsset;
@@ -9,6 +10,15 @@ struct symbolInfo{
     std::string tickSize;
     std::string stepSize;
 };
+
+class exchangeInfo{
+    public:
+        std::map<std::string, symbolInfo> spotSymbols;
+        std::map<std::string, symbolInfo> usdSymbols;
+        std::map<std::string, symbolInfo> coinSymbols;
+};
+
+exchangeInfo binanceExchange;
 
 void spotData(std::string spotBaseUrl, std::string spotEndpoint) {
     auto const host = spotBaseUrl.c_str();
@@ -18,6 +28,7 @@ void spotData(std::string spotBaseUrl, std::string spotEndpoint) {
     
     // The io_context is required for all I/O
     net::io_context ioc;
+    net::deadline_timer spotExchangeTimer(ioc, boost::posix_time::seconds(5));
 
     // The SSL context is required, and holds certificates
     ssl::context ctx{ssl::context::tlsv12_client};
@@ -52,7 +63,6 @@ void spotData(std::string spotBaseUrl, std::string spotEndpoint) {
     }
 
     const auto& symbolsArray = fullData["symbols"];
-    std::vector<symbolInfo> symbols;
 
     for (const auto& symbol : symbolsArray.GetArray()) {
         symbolInfo info;
@@ -69,10 +79,12 @@ void spotData(std::string spotBaseUrl, std::string spotEndpoint) {
             }
         }
 
-        symbols.push_back(info);
+        binanceExchange.spotSymbols[info.symbol] = info;
     }
 
-    for (const auto& symbolInfo : symbols) {
+    for (const auto& pair : binanceExchange.spotSymbols) {
+        const auto& symbolInfo = pair.second; 
+
         std::cout << "Symbol: " << symbolInfo.symbol << std::endl;
         std::cout << "Quote Asset: " << symbolInfo.quoteAsset << std::endl;
         std::cout << "Status: " << symbolInfo.status << std::endl;
@@ -80,7 +92,9 @@ void spotData(std::string spotBaseUrl, std::string spotEndpoint) {
         std::cout << "Step Size: " << symbolInfo.stepSize << std::endl;
         std::cout << "---------------------" << std::endl;
     }
-    std::cout << symbols.size() << std::endl; 
+
+    std::cout << "Total symbols: " << binanceExchange.spotSymbols.size() << std::endl;
+
 }
 
 void usdFutureData(std::string usdFutureBaseUrl, std::string usdFutureEndpoint) {
@@ -106,7 +120,49 @@ void usdFutureData(std::string usdFutureBaseUrl, std::string usdFutureEndpoint) 
 
     http::response<http::string_body> usdFutureExchange;
     usdFutureExchange = returnResponse();
-    std::cout << usdFutureExchange << std::endl;
+    //std::cout << usdFutureExchange << std::endl;
+
+    rapidjson::Document fullData;
+    fullData.Parse(usdFutureExchange.body().c_str());
+
+    if (!fullData.IsObject() || !fullData.HasMember("symbols") || !fullData["symbols"].IsArray()) {
+        std::cerr << "Invalid JSON format or missing symbols array." << std::endl;
+    }
+
+    const auto& symbolsArray = fullData["symbols"];
+
+    for (const auto& symbol : symbolsArray.GetArray()) {
+        symbolInfo info;
+        info.symbol = symbol["symbol"].GetString();
+        info.quoteAsset = symbol["quoteAsset"].GetString();
+        info.status = symbol["contractStatus"].GetString();
+
+        for (const auto& filter : symbol["filters"].GetArray()) {
+            std::string filterType = filter["filterType"].GetString();
+            if (filterType == "PRICE_FILTER") {
+                info.tickSize = filter["tickSize"].GetString();
+            } else if (filterType == "LOT_SIZE") {
+                info.stepSize = filter["stepSize"].GetString();
+            }
+        }
+
+        binanceExchange.usdSymbols[info.symbol] = info;
+    }
+
+    for (const auto& pair : binanceExchange.usdSymbols) {
+        const auto& symbolInfo = pair.second; 
+
+        std::cout << "Symbol: " << symbolInfo.symbol << std::endl;
+        std::cout << "Quote Asset: " << symbolInfo.quoteAsset << std::endl;
+        std::cout << "Status: " << symbolInfo.status << std::endl;
+        std::cout << "Tick Size: " << symbolInfo.tickSize << std::endl;
+        std::cout << "Step Size: " << symbolInfo.stepSize << std::endl;
+        std::cout << "---------------------" << std::endl;
+    }
+
+    std::cout << "Total symbols: " << binanceExchange.usdSymbols.size() << std::endl;
+
+
 }
 
 void coinFutureData(std::string coinFutureBaseUrl, std::string coinFutureEndpoint){
@@ -132,5 +188,46 @@ void coinFutureData(std::string coinFutureBaseUrl, std::string coinFutureEndpoin
 
     http::response<http::string_body> coinFutureExchange;
     coinFutureExchange = returnResponse();
-    std::cout << coinFutureExchange << std::endl;
+    // std::cout << coinFutureExchange << std::endl;
+
+    rapidjson::Document fullData;
+    fullData.Parse(coinFutureExchange.body().c_str());
+
+    if (!fullData.IsObject() || !fullData.HasMember("symbols") || !fullData["symbols"].IsArray()) {
+        std::cerr << "Invalid JSON format or missing symbols array." << std::endl;
+    }
+
+    const auto& symbolsArray = fullData["symbols"];
+
+    for (const auto& symbol : symbolsArray.GetArray()) {
+        symbolInfo info;
+        info.symbol = symbol["symbol"].GetString();
+        info.quoteAsset = symbol["quoteAsset"].GetString();
+        info.status = symbol["status"].GetString();
+
+        for (const auto& filter : symbol["filters"].GetArray()) {
+            std::string filterType = filter["filterType"].GetString();
+            if (filterType == "PRICE_FILTER") {
+                info.tickSize = filter["tickSize"].GetString();
+            } else if (filterType == "LOT_SIZE") {
+                info.stepSize = filter["stepSize"].GetString();
+            }
+        }
+
+        binanceExchange.coinSymbols[info.symbol] = info;
+    }
+
+    for (const auto& pair : binanceExchange.coinSymbols) {
+        const auto& symbolInfo = pair.second; 
+
+        std::cout << "Symbol: " << symbolInfo.symbol << std::endl;
+        std::cout << "Quote Asset: " << symbolInfo.quoteAsset << std::endl;
+        std::cout << "Status: " << symbolInfo.status << std::endl;
+        std::cout << "Tick Size: " << symbolInfo.tickSize << std::endl;
+        std::cout << "Step Size: " << symbolInfo.stepSize << std::endl;
+        std::cout << "---------------------" << std::endl;
+    }
+
+    std::cout << "Total symbols: " << binanceExchange.coinSymbols.size() << std::endl;
+
 }

@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include <thread>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 
 void spotData(std::string, std::string);
 void usdFutureData(std::string, std::string);
@@ -40,10 +42,6 @@ void readConfig(std::string configFile, rapidjson::Document &doc) {
 
 }
 
-// class exchangeInfo{
-//     private:
-//         std::vector<symbolInfo> symbols;
-// };
 
 int main() {
 
