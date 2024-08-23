@@ -285,7 +285,7 @@ void readQuery() {
         std::string queryFile = "/home/omer/training/BinanceExchangeHandler/query.json";
         FILE* fp = fopen(queryFile.c_str(), "r"); 
         if (!fp) { 
-            std::cerr << "Error: unable to open file" << std::endl; 
+            std::cout << "Error: unable to open file" << std::endl; 
         } 
 
         char buffer[65536];
