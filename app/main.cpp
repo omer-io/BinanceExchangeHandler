@@ -86,16 +86,16 @@ int main() {
     std::cout << "Coin Futures Exchange Info URI: " << coin_futures_exchange_info_uri << std::endl;
     std::cout << "Request Interval: " << request_interval << " seconds" << std::endl;
 
-    fetchAllNoIO();
-    readQuery();
+    // fetchAllNoIO();
+    std::thread readQueryThread(readQuery);
     // // //std::thread queryThread
-    // boost::asio::io_context io;
-    // boost::asio::steady_timer t(io, boost::asio::chrono::seconds(20));
+    boost::asio::io_context io;
+    boost::asio::steady_timer t(io, boost::asio::chrono::seconds(20));
 
-    // t.async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, &t));
+    t.async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, &t));
 
-    // io.run();
-
+    io.run();
+    readQueryThread.join();
     // // // std::thread ioThread(runIoContext, std::ref(io));
     // // //     std::cout << "hello";
     // // // ioThread.join();

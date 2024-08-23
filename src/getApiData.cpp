@@ -94,7 +94,7 @@ void spotData(std::string spotBaseUrl, std::string spotEndpoint) {
     //     std::cout << "---------------------" << std::endl;
     // }
 
-    std::cout << "Total symbols: " << binanceExchange.spotSymbols.size() << std::endl;
+    std::cout << "Total SPOT symbols: " << binanceExchange.spotSymbols.size() << std::endl;
 
 }
 
@@ -161,7 +161,7 @@ void usdFutureData(std::string usdFutureBaseUrl, std::string usdFutureEndpoint) 
     //     std::cout << "---------------------" << std::endl;
     // }
 
-    std::cout << "Total symbols: " << binanceExchange.usdSymbols.size() << std::endl;
+    std::cout << "Total USD Futures symbols: " << binanceExchange.usdSymbols.size() << std::endl;
 
 
 }
@@ -229,11 +229,17 @@ void coinFutureData(std::string coinFutureBaseUrl, std::string coinFutureEndpoin
     //     std::cout << "---------------------" << std::endl;
     // }
 
-    std::cout << "Total symbols: " << binanceExchange.coinSymbols.size() << std::endl;
+    std::cout << "Total Coin Futures symbols: " << binanceExchange.coinSymbols.size() << std::endl;
 
 }
 
 void spotQuery(std::string spotQuerySymbol, std::string spotQueryType, std::string spotQueryStatus){
+            
+    auto it = binanceExchange.spotSymbols.find(spotQuerySymbol);
+    if (it == binanceExchange.spotSymbols.end()) {
+        std::cout << spotQuerySymbol << ": symbol does not exist" << std::endl;
+        return;
+    } 
     if(spotQueryType == "GET"){
         std::cout << "Getting spot data for " << spotQuerySymbol << std::endl;
         symbolInfo temp = binanceExchange.spotSymbols[spotQuerySymbol];
@@ -264,54 +270,72 @@ void spotQuery(std::string spotQuerySymbol, std::string spotQueryType, std::stri
         else {
             std::cout << "Symbol " << spotQuerySymbol << " not found." << std::endl;
         }
-        std::cout << "deletion" << binanceExchange.spotSymbols[spotQuerySymbol].symbol << std::endl;
+       // std::cout << "deletion" << binanceExchange.spotSymbols[spotQuerySymbol].symbol << std::endl;
     }
 }
 
 void readQuery() {
 
-    int queryID;
-    std::string queryType, queryMarket, querySymbol, queryStatus;
+    int usdFuturePrevQueryID, spotPrevQueryID, coinFuturePrevQueryID;
+    while(true){
+        int queryID;
+        std::string queryType, queryMarket, querySymbol, queryStatus;
 
-    rapidjson::Document doc;
-    std::string queryFile = "/home/omer/training/BinanceExchangeHandler/query.json";
-    FILE* fp = fopen(queryFile.c_str(), "r"); 
-    if (!fp) { 
-        std::cerr << "Error: unable to open file" << std::endl; 
-    } 
+        rapidjson::Document doc;
+        std::string queryFile = "/home/omer/training/BinanceExchangeHandler/query.json";
+        FILE* fp = fopen(queryFile.c_str(), "r"); 
+        if (!fp) { 
+            std::cerr << "Error: unable to open file" << std::endl; 
+        } 
 
-    char buffer[65536];
-    rapidjson::FileReadStream is(fp, buffer, sizeof(buffer));
+        char buffer[65536];
+        rapidjson::FileReadStream is(fp, buffer, sizeof(buffer));
 
-    doc.ParseStream(is);
+        doc.ParseStream(is);
+        fclose(fp); 
 
-    for (rapidjson::Value::ConstValueIterator itr = doc["query"].Begin(); itr != doc["query"].End(); ++itr) {
-        int queryID = (*itr)["id"].GetInt();
-        std::string queryType = (*itr)["query_type"].GetString();
-        std::string queryMarket = (*itr)["market_type"].GetString();
-        std::string querySymbol = (*itr)["instrument_name"].GetString();
+        for (rapidjson::Value::ConstValueIterator itr = doc["query"].Begin(); itr != doc["query"].End(); ++itr) {
+            int queryID = (*itr)["id"].GetInt();
+            std::string queryType = (*itr)["query_type"].GetString();
+            std::string queryMarket = (*itr)["market_type"].GetString();
+            std::string querySymbol = (*itr)["instrument_name"].GetString();
 
-        std::cout << "Query ID: " << queryID << std::endl;
-        std::cout << "Query Type: " << queryType << std::endl;
-        std::cout << "Market Type: " << queryMarket << std::endl;
-        std::cout << "Instrument Name: " << querySymbol << std::endl;
+            // std::cout << "Query ID: " << queryID << std::endl;
+            // std::cout << "Query Type: " << queryType << std::endl;
+            // std::cout << "Market Type: " << queryMarket << std::endl;
+            // std::cout << "Instrument Name: " << querySymbol << std::endl;
 
-        if (itr->HasMember("data")) {
-            if ((*itr)["data"].HasMember("status")) {
-                queryStatus = (*itr)["data"]["status"].GetString();
-                std::cout << "Status: " << queryStatus << std::endl;
+            if (itr->HasMember("data")) {
+                if ((*itr)["data"].HasMember("status")) {
+                    queryStatus = (*itr)["data"]["status"].GetString();
+                    // std::cout << "Status: " << queryStatus << std::endl;
+                }
+            }
+            if(queryID != spotPrevQueryID && queryID != usdFuturePrevQueryID && queryID != coinFuturePrevQueryID){
+                if(queryMarket == "SPOT"){
+                    std::thread spotQueryThread (spotQuery, querySymbol, queryType, queryStatus);
+                    spotQueryThread.join();
+                }
+                if(queryMarket == "usd_futures"){
+                    std::thread usdFutureQueryThread (spotQuery, querySymbol, queryType, queryStatus);
+                    usdFutureQueryThread.join();
+                }
+                if(queryMarket == "coin_futures"){
+                    std::thread coinFutureQueryThread (spotQuery, querySymbol, queryType, queryStatus);
+                    coinFutureQueryThread.join();
+                }
+            }
+            if(queryMarket == "SPOT"){
+                spotPrevQueryID = queryID;
+            }
+            if(queryMarket == "usd_futures"){
+                usdFuturePrevQueryID = queryID;
+            }
+            if(queryMarket == "coin_futures"){
+                coinFuturePrevQueryID = queryID;
             }
         }
-
-        if(queryMarket == "SPOT"){
-            std::thread spotQueryThread (spotQuery, querySymbol, queryType, queryStatus);
-            spotQueryThread.join();
-        }
-
-
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-
-    fclose(fp); 
-
 }
 
