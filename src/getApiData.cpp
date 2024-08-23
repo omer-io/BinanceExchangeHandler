@@ -1,10 +1,13 @@
 
 #include "https.h"
+#include <rapidjson/filewritestream.h>
+#include <rapidjson/writer.h> 
 #include <rapidjson/document.h>
 #include <rapidjson/filereadstream.h>
 #include <vector>
 #include <map>
 #include <thread>
+
 struct symbolInfo{
     std::string symbol;
     std::string quoteAsset;
@@ -240,6 +243,10 @@ void spotQuery(std::string spotQuerySymbol, std::string spotQueryType, std::stri
         std::cout << spotQuerySymbol << ": symbol does not exist" << std::endl;
         return;
     } 
+
+    rapidjson::Document answers; 
+    answers.SetObject();
+
     if(spotQueryType == "GET"){
         std::cout << "Getting spot data for " << spotQuerySymbol << std::endl;
         symbolInfo temp = binanceExchange.spotSymbols[spotQuerySymbol];
@@ -249,6 +256,15 @@ void spotQuery(std::string spotQuerySymbol, std::string spotQueryType, std::stri
         std::cout << "Tick Size: " << temp.tickSize << std::endl;
         std::cout << "Step Size: " << temp.stepSize << std::endl;
         std::cout << "---------------------" << std::endl;
+        
+        rapidjson::Value key(spotQueryType.c_str(), answers.GetAllocator());
+        rapidjson::Value value(spotQuerySymbol.c_str(), answers.GetAllocator());
+        answers.AddMember(key, value, answers.GetAllocator());
+        //answers.SetArray();
+        // rapidjson::Writer.StartArray();                // Between StartArray()/EndArray(),
+        // for (unsigned i = 0; i < 4; i++)
+        // writer.Uint(i);
+         
     }
 
     else if(spotQueryType == "UPDATE"){
@@ -270,8 +286,15 @@ void spotQuery(std::string spotQuerySymbol, std::string spotQueryType, std::stri
         else {
             std::cout << "Symbol " << spotQuerySymbol << " not found." << std::endl;
         }
-       // std::cout << "deletion" << binanceExchange.spotSymbols[spotQuerySymbol].symbol << std::endl;
     }
+        
+    FILE* fp2 = fopen("/home/omer/training/BinanceExchangeHandler/answers.json", "a"); 
+    char writeBuffer[65536]; 
+    rapidjson::FileWriteStream os(fp2, writeBuffer, sizeof(writeBuffer)); 
+    rapidjson::Writer writer(os); 
+    answers.Accept(writer); 
+    fclose(fp2);  
+
 }
 
 void readQuery() {
