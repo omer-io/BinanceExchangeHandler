@@ -90,6 +90,7 @@ int main() {
     std::thread readQueryThread(readQuery);
     // // //std::thread queryThread
     boost::asio::io_context io;
+
     boost::asio::steady_timer t(io, boost::asio::chrono::seconds(20));
 
     t.async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, &t));

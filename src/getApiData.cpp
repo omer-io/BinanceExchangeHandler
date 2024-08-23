@@ -236,64 +236,89 @@ void coinFutureData(std::string coinFutureBaseUrl, std::string coinFutureEndpoin
 
 }
 
-void spotQuery(std::string spotQuerySymbol, std::string spotQueryType, std::string spotQueryStatus){
+void query(std::string queryMarket, std::string querySymbol, std::string queryType, std::string queryStatus){
             
-    auto it = binanceExchange.spotSymbols.find(spotQuerySymbol);
-    if (it == binanceExchange.spotSymbols.end()) {
-        std::cout << spotQuerySymbol << ": symbol does not exist" << std::endl;
+    auto it = binanceExchange.spotSymbols.find(querySymbol), it2 = binanceExchange.usdSymbols.find(querySymbol), it3 = binanceExchange.coinSymbols.find(querySymbol);
+    if (it == binanceExchange.spotSymbols.end() && it2 == binanceExchange.usdSymbols.end() && it3 == binanceExchange.coinSymbols.end()) {
+        std::cout << querySymbol << ": symbol does not exist" << std::endl;
         return;
     } 
 
-    rapidjson::Document answers; 
-    answers.SetObject();
+    symbolInfo temp;
+    if (queryMarket == "SPOT") {
+        temp = binanceExchange.spotSymbols[querySymbol];  
+    }
+    if (queryMarket == "usd_futures") {
+        temp = binanceExchange.usdSymbols[querySymbol];  
+    }
+    if (queryMarket == "coin_futures") {
+        temp = binanceExchange.coinSymbols[querySymbol];  
+    }
 
-    if(spotQueryType == "GET"){
-        std::cout << "Getting spot data for " << spotQuerySymbol << std::endl;
-        symbolInfo temp = binanceExchange.spotSymbols[spotQuerySymbol];
-        std::cout << "Symbol: " << temp.symbol << std::endl;
-        std::cout << "Quote Asset: " << temp.quoteAsset << std::endl;
-        std::cout << "Status: " << temp.status << std::endl;
-        std::cout << "Tick Size: " << temp.tickSize << std::endl;
-        std::cout << "Step Size: " << temp.stepSize << std::endl;
-        std::cout << "---------------------" << std::endl;
+    rapidjson::Document answers;
+    answers.SetObject();
+    auto& allocator = answers.GetAllocator();
+
+    if(queryType == "GET"){
+        std::cout << "Getting spot data for " << querySymbol << std::endl;
+
+        rapidjson::Value symbolDetails(rapidjson::kObjectType);
+        symbolDetails.AddMember("symbol", rapidjson::Value(temp.symbol.c_str(), allocator), allocator);
+        symbolDetails.AddMember("quoteAsset", rapidjson::Value(temp.quoteAsset.c_str(), allocator), allocator);
+        symbolDetails.AddMember("status", rapidjson::Value(temp.status.c_str(), allocator), allocator);
+        symbolDetails.AddMember("tickSize", rapidjson::Value(temp.tickSize.c_str(), allocator), allocator);
+        symbolDetails.AddMember("stepSize", rapidjson::Value(temp.stepSize.c_str(), allocator), allocator);
+
+        answers.AddMember("data", symbolDetails, allocator);
         
-        rapidjson::Value key(spotQueryType.c_str(), answers.GetAllocator());
-        rapidjson::Value value(spotQuerySymbol.c_str(), answers.GetAllocator());
-        answers.AddMember(key, value, answers.GetAllocator());
-        //answers.SetArray();
-        // rapidjson::Writer.StartArray();                // Between StartArray()/EndArray(),
-        // for (unsigned i = 0; i < 4; i++)
-        // writer.Uint(i);
          
     }
 
-    else if(spotQueryType == "UPDATE"){
-        std::cout << "Updating spot data for " << spotQuerySymbol << std::endl;
-        std::cout << binanceExchange.spotSymbols[spotQuerySymbol].status << std::endl;
-        binanceExchange.spotSymbols[spotQuerySymbol].status = spotQueryStatus;
-        std::cout << binanceExchange.spotSymbols[spotQuerySymbol].status << std::endl;
+    else if(queryType == "UPDATE"){
+        std::cout << "Updating spot data for " << querySymbol << std::endl;
+        std::cout << binanceExchange.spotSymbols[querySymbol].status << std::endl;
+        binanceExchange.spotSymbols[querySymbol].status = queryStatus;
+        std::cout << binanceExchange.spotSymbols[querySymbol].status << std::endl;
+
+        rapidjson::Value updateDetails(rapidjson::kObjectType);
+        updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
+        updateDetails.AddMember("newStatus", rapidjson::Value(queryStatus.c_str(), allocator), allocator);
+
+        answers.AddMember("update", updateDetails, allocator);
 
     }
 
-    else if(spotQueryType == "DELETE"){
-        std::cout << "Deleting spot data for " << spotQuerySymbol << std::endl;
-        std::cout << binanceExchange.spotSymbols[spotQuerySymbol].symbol << std::endl;
-        auto it = binanceExchange.spotSymbols.find(spotQuerySymbol);
+    else if(queryType == "DELETE"){
+        std::cout << "Deleting spot data for " << querySymbol << std::endl;
+        std::cout << binanceExchange.spotSymbols[querySymbol].symbol << std::endl;
+        auto it = binanceExchange.spotSymbols.find(querySymbol);
         if (it != binanceExchange.spotSymbols.end()) {
             binanceExchange.spotSymbols.erase(it);
-            std::cout << "Deleted symbol " << spotQuerySymbol << std::endl;
+            std::cout << "Deleted symbol " << querySymbol << std::endl;
         } 
         else {
-            std::cout << "Symbol " << spotQuerySymbol << " not found." << std::endl;
+            std::cout << "Symbol " << querySymbol << " not found." << std::endl;
         }
+
+        rapidjson::Value deleteDetails(rapidjson::kObjectType);
+        deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
+
+        answers.AddMember("delete", deleteDetails, allocator);
     }
         
-    FILE* fp2 = fopen("/home/omer/training/BinanceExchangeHandler/answers.json", "a"); 
-    char writeBuffer[65536]; 
-    rapidjson::FileWriteStream os(fp2, writeBuffer, sizeof(writeBuffer)); 
-    rapidjson::Writer writer(os); 
-    answers.Accept(writer); 
-    fclose(fp2);  
+    // Write to answers.json file
+    FILE* fp2 = fopen("/home/omer/training/BinanceExchangeHandler/answers.json", "a");
+    if (!fp2) {
+        std::cerr << "Error: Could not open file for writing." << std::endl;
+        return;
+    }
+    char writeBuffer[65536];
+    rapidjson::FileWriteStream os(fp2, writeBuffer, sizeof(writeBuffer));
+    rapidjson::Writer<rapidjson::FileWriteStream> writer(os);
+    answers.Accept(writer);
+
+    fputs("\n", fp2);
+    fclose(fp2);
 
 }
 
@@ -336,15 +361,15 @@ void readQuery() {
             }
             if(queryID != spotPrevQueryID && queryID != usdFuturePrevQueryID && queryID != coinFuturePrevQueryID){
                 if(queryMarket == "SPOT"){
-                    std::thread spotQueryThread (spotQuery, querySymbol, queryType, queryStatus);
-                    spotQueryThread.join();
+                    std::thread queryThread (query, queryMarket, querySymbol, queryType, queryStatus);
+                    queryThread.join();
                 }
                 if(queryMarket == "usd_futures"){
-                    std::thread usdFutureQueryThread (spotQuery, querySymbol, queryType, queryStatus);
+                    std::thread usdFutureQueryThread (query, queryMarket, querySymbol, queryType, queryStatus);
                     usdFutureQueryThread.join();
                 }
                 if(queryMarket == "coin_futures"){
-                    std::thread coinFutureQueryThread (spotQuery, querySymbol, queryType, queryStatus);
+                    std::thread coinFutureQueryThread (query, queryMarket, querySymbol, queryType, queryStatus);
                     coinFutureQueryThread.join();
                 }
             }
