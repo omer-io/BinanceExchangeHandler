@@ -7,6 +7,8 @@
 #include <vector>
 #include <map>
 #include <thread>
+#include <boost/asio.hpp>
+#include <boost/bind/bind.hpp>
 
 struct symbolInfo{
     std::string symbol;
