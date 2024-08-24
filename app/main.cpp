@@ -10,12 +10,11 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/basic_file_sink.h"
+#include "exchangeInfoClass.h"
 
 // functions declared here are defined in src/getApiData.cpp
-void spotData(std::string, std::string);
-void usdFutureData(std::string, std::string);
-void coinFutureData(std::string, std::string);
-void readQuery();
+void fetchData(exchangeInfo&, std::string, std::string);
+void readQuery(exchangeInfo&);
 
 // global variables to store base url and endpoints info
 std::string spotExchangeBaseUrl, usdFutureExchangeBaseUrl, coinFutureExchangeBaseUrl;
@@ -29,14 +28,19 @@ struct logsInfo {
     bool console;
 } logsConfig;
 
+// instance of class excahngeInfo defined in exchangeInfoClass.h, stores data of all endpoints in respective map
+exchangeInfo binanceExchange;
+
 // read config.json for logging, request url, request interval
 void readConfig(std::string configFile) {
 
+    spdlog::info("Reading config file: {}", configFile);
     // open config.json
     FILE* fp = fopen(configFile.c_str(), "r"); 
     
     // throw error if file not opened
     if (!fp) { 
+        spdlog::error("Error: unable to open file");
         std::cerr << "Error: unable to open file" << std::endl; 
     } 
 
@@ -67,22 +71,29 @@ void readConfig(std::string configFile) {
     // close file
     fclose(fp); 
 
+    spdlog::info("Config file loaded successfully");
 }
 
-
+// Function to fetch data of all 3 endpoints
 void fetchAll(const boost::system::error_code& /*e*/, boost::asio::steady_timer* t){
-    std::thread spotThread (spotData, spotExchangeBaseUrl, spotExchangeEndpoint);
-    std::thread usdFutureThread (usdFutureData, usdFutureExchangeBaseUrl, usdFutureEndpoint);
-    std::thread coinFutureThread (coinFutureData, coinFutureExchangeBaseUrl, coinFutureEndpoint);
+    
+    spdlog::info("Fetching all data");  
 
+    // Create three threads to fetch data from each endpoint  
+    std::thread spotThread (fetchData, std::ref(binanceExchange), spotExchangeBaseUrl, spotExchangeEndpoint);
+    std::thread usdFutureThread (fetchData, std::ref(binanceExchange), usdFutureExchangeBaseUrl, usdFutureEndpoint);
+    std::thread coinFutureThread (fetchData, std::ref(binanceExchange), coinFutureExchangeBaseUrl, coinFutureEndpoint);
+
+    // Wait for each thread to finish fetching data
     spotThread.join();
     usdFutureThread.join();
     coinFutureThread.join();
 
+    // Set the timer to expire in 60 seconds and wait for next fetch
     t->expires_at(t->expiry() + boost::asio::chrono::seconds(20));
     t->async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, t));
 
-    
+    spdlog::info("Fetch all data completed");    
 }
 
 void setSpdLogs(){
@@ -93,15 +104,17 @@ void setSpdLogs(){
     // Add console sink if enabled
     if (logsConfig.console) {
         sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+        spdlog::info("Console logging enabled");
     }
 
     // Add file sink if enabled
     if (logsConfig.file) {
         sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/logfile.log", true));
+        spdlog::info("File logging enabled");
     }
 
-    // Create combined logger
-    auto logger = std::make_shared<spdlog::logger>("multi_sink", begin(sinks), end(sinks));
+    // Create logger
+    auto logger = std::make_shared<spdlog::logger>("BinanceExchangeLogs", begin(sinks), end(sinks));
 
     // set level
     logger->set_level(spdlog::level::from_str(logsConfig.level));
@@ -109,8 +122,9 @@ void setSpdLogs(){
     // register logger
     spdlog::register_logger(logger);
     spdlog::set_default_logger(logger);
-    spdlog::flush_every(std::chrono::seconds(1));
+    logger->flush_on(spdlog::level::from_str(logsConfig.level));
 
+    spdlog::info("Logger setup completed");
 }
 
 
@@ -119,9 +133,13 @@ void setSpdLogs(){
 //     io.run();
 // }
 
+
 int main() {
 
-    readConfig("/home/omer/training/BinanceExchangeHandler/config.json");
+    // read configuration file
+    readConfig("config.json");
+    
+    // set up logging system
     setSpdLogs();
     std::cout << "Spot Exchange Info base URI: " << spotExchangeBaseUrl << std::endl;
     std::cout << "USD Futures Exchange Info base URI: " << usdFutureExchangeBaseUrl << std::endl;
@@ -143,16 +161,22 @@ int main() {
     spdlog::info("Coin Futures Exchange Info URI: {}", coinFutureEndpoint);
     spdlog::info("Request Interval: {} seconds", requestInterval);
 
-    std::thread readQueryThread(readQuery);
+    // thread to run the readQuery function
+    std::thread readQueryThread(readQuery, std::ref(binanceExchange));
 
+    // IO context for async operations
     boost::asio::io_context io;
 
+    // timer to fetch data every 60 sec
     boost::asio::steady_timer t(io, boost::asio::chrono::seconds(20));
 
+    // call back fetchAll function when timer expires
     t.async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, &t));
 
+    // Run IO context
     io.run();
 
+   // Wait for the readQuery thread to finish
     readQueryThread.join();
     
     // // // std::thread ioThread(runIoContext, std::ref(io));
