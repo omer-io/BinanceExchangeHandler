@@ -66,7 +66,7 @@ void fetchData(exchangeInfo& binanceExchange, std::string baseUrl, std::string e
 
     // Check if parsed data is object and contains symbols array
     if (!fullData.IsObject() || !fullData.HasMember("symbols") || !fullData["symbols"].IsArray()) {
-        std::cerr << "Invalid JSON format or missing symbols array." << std::endl;
+        spdlog::error("Invalid JSON format or missing symbols array.");
     }
 
     // Access the "symbols" array
@@ -113,18 +113,9 @@ void fetchData(exchangeInfo& binanceExchange, std::string baseUrl, std::string e
     // }
 
     // Output total number of symbols found
-    if(baseUrl == "api.binance.com") { 
-        std::cout << "Total SPOT symbols: " << binanceExchange.spotSymbols.size() << std::endl; 
-        spdlog::info("Total SPOT symbols: {}", binanceExchange.spotSymbols.size());    
-    }
-    if(baseUrl == "dapi.binance.com") { 
-        std::cout << "Total usd futures symbols: " << binanceExchange.usdSymbols.size() << std::endl; 
-        spdlog::info("Total usd futures symbols: {}", binanceExchange.usdSymbols.size()); 
-    }
-    if(baseUrl == "fapi.binance.com") { 
-        std::cout << "Total coin futures symbols: " << binanceExchange.coinSymbols.size() << std::endl; 
-        spdlog::info("Total coin futures symbols: {}", binanceExchange.coinSymbols.size()); 
-    }
+    if(baseUrl == "api.binance.com") { spdlog::info("Total SPOT symbols: {}", binanceExchange.spotSymbols.size()); }
+    if(baseUrl == "dapi.binance.com") { spdlog::info("Total usd futures symbols: {}", binanceExchange.usdSymbols.size()); }
+    if(baseUrl == "fapi.binance.com") { spdlog::info("Total coin futures symbols: {}", binanceExchange.coinSymbols.size());}
 }
 
 
@@ -138,7 +129,6 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
     // If symbol is not found in any market, print an error message and exit
     if (it == binanceExchange.spotSymbols.end() && it2 == binanceExchange.usdSymbols.end() && it3 == binanceExchange.coinSymbols.end()) {
         spdlog::error("{}: symbol does not exist", querySymbol);
-        std::cout << querySymbol << ": symbol does not exist" << std::endl;
         return;
     } 
 
@@ -157,7 +147,7 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
     if(queryType == "GET"){
 
         // GET request: retrieve and output symbol to answers.json
-        std::cout << "Getting spot data for " << querySymbol << std::endl;
+        spdlog::info("Getting spot data for {}", querySymbol);
 
         rapidjson::Value symbolDetails(rapidjson::kObjectType);
         symbolDetails.AddMember("symbol", rapidjson::Value(temp->symbol.c_str(), allocator), allocator);
@@ -174,12 +164,9 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
     else if(queryType == "UPDATE"){
 
         // UPDATE request: modify symbol status and output update details to answers.json
-        std::cout << "Updating spot data for " << querySymbol << std::endl;
-        std::cout << "old status: " << temp->status << std::endl;
         spdlog::info("Updating data for symbol: {}", querySymbol);
         spdlog::info("Old Status: {}", temp->status);
         temp->status = queryStatus;
-        std::cout << "new status: " << temp->status << std::endl;
         spdlog::info("New Status: {}", temp->status);
 
         rapidjson::Value updateDetails(rapidjson::kObjectType);
@@ -194,13 +181,11 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
 
         // DELETE request: remove symbol from respective market and output delete status to answers.json
         spdlog::info("Deleting data for symbol: {}", querySymbol);
-        std::cout << "Deleting spot data for " << querySymbol << std::endl;
         if(queryMarket == "SPOT") {
             auto it = binanceExchange.spotSymbols.find(querySymbol);
             if (it != binanceExchange.spotSymbols.end()) {
                 binanceExchange.spotSymbols.erase(it);
                 spdlog::info("Deleted symbol {}", querySymbol);
-                std::cout << "Deleted symbol " << querySymbol << std::endl;
             } 
         }
         else if(queryMarket == "usd_futures") {
@@ -208,7 +193,6 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
             if (it != binanceExchange.usdSymbols.end()) {
                 binanceExchange.usdSymbols.erase(it);
                 spdlog::info("Deleted symbol {}", querySymbol);
-                std::cout << "Deleted symbol " << querySymbol << std::endl;
             } 
         }
         else if(queryMarket == "coin_futures") {
@@ -216,12 +200,10 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
             if (it != binanceExchange.coinSymbols.end()) {
                 binanceExchange.coinSymbols.erase(it);
                 spdlog::info("Deleted symbol {}", querySymbol);
-                std::cout << "Deleted symbol " << querySymbol << std::endl;
             } 
         }
         else {
             spdlog::warn("Symbol {} not found for deletion.", querySymbol);
-            std::cout << "Symbol " << querySymbol << " not found." << std::endl;
         }
 
         rapidjson::Value deleteDetails(rapidjson::kObjectType);
@@ -233,7 +215,6 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
     // Write to answers.json file
     FILE* fp2 = fopen("answers.json", "a");
     if (!fp2) {
-        std::cerr << "Error: Could not open file for writing." << std::endl;
         spdlog::error("Could not open answers.json file for writing.");
         return;
     }
@@ -265,7 +246,7 @@ void readQuery(exchangeInfo& binanceExchange) {
         std::string queryFile = "query.json";
         FILE* fp = fopen(queryFile.c_str(), "r"); 
         if (!fp) { 
-            std::cout << "Error: unable to open file" << std::endl; 
+            spdlog::error("Error: unable to open file {}", queryFile);
         } 
 
         char buffer[65536];

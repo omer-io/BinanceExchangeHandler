@@ -41,7 +41,6 @@ void readConfig(std::string configFile) {
     // throw error if file not opened
     if (!fp) { 
         spdlog::error("Error: unable to open file");
-        std::cerr << "Error: unable to open file" << std::endl; 
     } 
 
     rapidjson::Document doc;
@@ -141,17 +140,11 @@ int main() {
     
     // set up logging system
     setSpdLogs();
-    std::cout << "Spot Exchange Info base URI: " << spotExchangeBaseUrl << std::endl;
-    std::cout << "USD Futures Exchange Info base URI: " << usdFutureExchangeBaseUrl << std::endl;
-    std::cout << "Coin Futures Exchange Info base URI: " << coinFutureExchangeBaseUrl << std::endl;
-    std::cout << "Spot Exchange Info URI: " << spotExchangeEndpoint << std::endl;
-    std::cout << "USD Futures Exchange Info URI: " << usdFutureEndpoint << std::endl;
-    std::cout << "Coin Futures Exchange Info URI: " << coinFutureEndpoint << std::endl;
-    std::cout << "Request Interval: " << requestInterval << " seconds" << std::endl;
 
-    std::cout << "Logging Level: " << logsConfig.level << std::endl;
-    std::cout << "Logging to File: " << (logsConfig.file ? "Enabled" : "Disabled") << std::endl;
-    std::cout << "Logging to Console: " << (logsConfig.console ? "Enabled" : "Disabled") << std::endl;
+    spdlog::info("Logging Level: {}", logsConfig.level);
+    spdlog::info("Logging to File: {}", logsConfig.file ? "Enabled" : "Disabled");
+    spdlog::info("Logging to Console: {}", logsConfig.console ? "Enabled" : "Disabled");
+
 
     spdlog::info("Spot Exchange Info base URI: {}", spotExchangeBaseUrl);
     spdlog::info("USD Futures Exchange Info base URI: {}", usdFutureExchangeBaseUrl);
@@ -180,7 +173,7 @@ int main() {
     readQueryThread.join();
     
     // // // std::thread ioThread(runIoContext, std::ref(io));
-    // // //     std::cout << "hello";
+
     // // // ioThread.join();
 
 
