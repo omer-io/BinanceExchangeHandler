@@ -10,10 +10,14 @@ RUN apt-get update && apt-get install -y \
 COPY . /app/
 
 
-# Change to the build directory and run cmake and make
-WORKDIR /app/build
-RUN rm -rf *
-RUN cmake .. && make
+# Create build directory and copy config.json and query.json into build
+RUN mkdir build
+RUN cp config.json query.json build/
 
-# Define the default command to run your application
+# run cmake and make
+WORKDIR /app/build
+RUN cmake ..
+RUN make
+
+# run application
 CMD ["./main"]
