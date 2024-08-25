@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
 #include "exchangeInfoClass.h"
 
-// Test the fetchData function
-TEST(FetchDataFunctionTest, ValidResponse) {
+// Test fetchData function
+TEST(FetchDataTest, ValidResponse) {
     exchangeInfo binanceExchange;
 
-    // Assuming that you have valid base URL and endpoint
+    // base URL and endpoint for testing
     std::string baseUrl = "api.binance.com";
     std::string endpoint = "/api/v3/exchangeInfo";
     
