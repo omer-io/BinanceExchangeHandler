@@ -17,6 +17,8 @@ link_libraries(${OPENSSL_LIBRARIES})
 
 include_directories(include)
 
+add_subdirectory(benchmark)
+
 add_executable(main app/main.cpp src/getApiData.cpp)
 
 

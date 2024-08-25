@@ -13,3 +13,8 @@ class exchangeInfo{
         std::map<std::string, symbolInfo> usdSymbols;
         std::map<std::string, symbolInfo> coinSymbols;
 };
+
+// functions declared here are defined in src/getApiData.cpp
+void fetchData(exchangeInfo&, std::string, std::string);
+void readQuery(exchangeInfo&);
+void query(exchangeInfo&, std::string, std::string, std::string, std::string);
