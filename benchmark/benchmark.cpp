@@ -15,13 +15,13 @@ static void BMFetchData(benchmark::State& state) {
 }
 BENCHMARK(BMFetchData);
 
-// // Benchmark for the query function
-// static void BMQuery(benchmark::State& state) {
-//     for (auto _ : state) {
-//         query(dummyExchange, "SPOT", "BTCUSDT", "GET", "");
-//     }
-// }
-// BENCHMARK(BMQuery);
+// Benchmark for the query function
+static void BMQuery(benchmark::State& state) {
+    for (auto _ : state) {
+        query(dummyExchange, "SPOT", "BTCUSDT", "GET", "");
+    }
+}
+BENCHMARK(BMQuery);
 
 // Main function to run benchmarks
 BENCHMARK_MAIN();
