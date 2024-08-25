@@ -12,10 +12,6 @@
 #include "spdlog/sinks/basic_file_sink.h"
 #include "exchangeInfoClass.h"
 
-// functions declared here are defined in src/getApiData.cpp
-void fetchData(exchangeInfo&, std::string, std::string);
-void readQuery(exchangeInfo&);
-
 // global variables to store base url and endpoints info
 std::string spotExchangeBaseUrl, usdFutureExchangeBaseUrl, coinFutureExchangeBaseUrl;
 std::string spotExchangeEndpoint, usdFutureEndpoint, coinFutureEndpoint;
