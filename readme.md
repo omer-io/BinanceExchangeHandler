@@ -28,7 +28,7 @@ To build and run the project locally, follow these steps:
 10. Run unit tests: `./unittest/test`
 
 
-To build and run the project locally, follow these steps:
+To build and run the project in container, follow these steps:
 
 1. Clone the repository: `git clone https://github.com/omer-io/BinanceExchangeHandler`
 2. Create image: `docker build -t binanceimage .`
