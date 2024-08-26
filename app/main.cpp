@@ -85,7 +85,7 @@ void fetchAll(const boost::system::error_code& /*e*/, boost::asio::steady_timer*
     coinFutureThread.join();
 
     // Set the timer to expire in 60 seconds and wait for next fetch
-    t->expires_at(t->expiry() + boost::asio::chrono::seconds(20));
+    t->expires_at(t->expiry() + boost::asio::chrono::seconds(35));
     t->async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, t));
 
     spdlog::info("Fetch all data completed");    
@@ -151,7 +151,7 @@ int main() {
     boost::asio::io_context io;
 
     // timer to fetch data every 60 sec
-    boost::asio::steady_timer t(io, boost::asio::chrono::seconds(20));
+    boost::asio::steady_timer t(io, boost::asio::chrono::seconds(35));
 
     // call back fetchAll function when timer expires
     t.async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, &t));
