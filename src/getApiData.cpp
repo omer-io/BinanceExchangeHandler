@@ -101,17 +101,6 @@ void fetchData(exchangeInfo& binanceExchange, std::string baseUrl, std::string e
    
     }
 
-    // for (const auto& pair : binanceExchange.spotSymbols) {
-    //     const auto& symbolInfo = pair.second; 
-
-    //     std::cout << "Symbol: " << symbolInfo.symbol << std::endl;
-    //     std::cout << "Quote Asset: " << symbolInfo.quoteAsset << std::endl;
-    //     std::cout << "Status: " << symbolInfo.status << std::endl;
-    //     std::cout << "Tick Size: " << symbolInfo.tickSize << std::endl;
-    //     std::cout << "Step Size: " << symbolInfo.stepSize << std::endl;
-    //     std::cout << "---------------------" << std::endl;
-    // }
-
     // Output total number of symbols found
     if(baseUrl == "api.binance.com") { spdlog::info("Total SPOT symbols: {}", binanceExchange.spotSymbols.size()); }
     if(baseUrl == "dapi.binance.com") { spdlog::info("Total usd futures symbols: {}", binanceExchange.usdSymbols.size()); }
