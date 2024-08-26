@@ -18,3 +18,4 @@ class exchangeInfo{
 void fetchData(exchangeInfo&, std::string, std::string);
 void readQuery(exchangeInfo&);
 void query(exchangeInfo&, std::string, std::string, std::string, std::string);
+void setLogLevelForBM();

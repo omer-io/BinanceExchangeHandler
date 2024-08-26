@@ -5,7 +5,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     libssl-dev \
     cmake \ 
-    build-essential
+    build-essential \
+    nano
 
 COPY . /app/
 
@@ -20,4 +21,4 @@ RUN cmake ..
 RUN make
 
 # run application
-CMD ["./main"]
+# CMD ["./main"]

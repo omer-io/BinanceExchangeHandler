@@ -17,6 +17,7 @@ BENCHMARK(BMFetchData);
 
 // Benchmark for the query function
 static void BMQuery(benchmark::State& state) {
+    setLogLevelForBM();
     for (auto _ : state) {
         query(dummyExchange, "SPOT", "BTCUSDT", "GET", "");
     }

@@ -123,12 +123,6 @@ void setSpdLogs(){
 }
 
 
-// run ioc.run() in a thread
-// void runIoContext(boost::asio::io_context& io) {
-//     io.run();
-// }
-
-
 int main() {
 
     // read configuration file

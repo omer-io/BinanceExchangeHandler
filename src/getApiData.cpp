@@ -288,3 +288,6 @@ void readQuery(exchangeInfo& binanceExchange) {
     }
 }
 
+void setLogLevelForBM(){
+        spdlog::set_level(spdlog::level::off);
+}

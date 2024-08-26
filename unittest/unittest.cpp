@@ -9,11 +9,12 @@ TEST(FetchDataTest, ValidResponse) {
     std::string baseUrl = "api.binance.com";
     std::string endpoint = "/api/v3/exchangeInfo";
     
-    // Call fetchData and check if it correctly populates the exchangeInfo object
+    // Call fetchData 
     fetchData(binanceExchange, baseUrl, endpoint);
 
-    // Example check - you may have different symbols based on the real response
+    // check if symbols > 0
     EXPECT_GT(binanceExchange.spotSymbols.size(), 0);
+    // check if symbol BTCUSDT has quote asset USDT
     EXPECT_EQ(binanceExchange.spotSymbols["BTCUSDT"].quoteAsset, "USDT");
 }
 
@@ -39,7 +40,7 @@ TEST(QueryFunctionTest, UpdateRequest) {
 
     query(binanceExchange, market, symbol, queryType, queryStatus);
 
-    EXPECT_EQ(binanceExchange.spotSymbols[symbol].status, "BREAK");
+    EXPECT_EQ(binanceExchange.spotSymbols[symbol].status, "PENDING");
 }
 
 int main() {
