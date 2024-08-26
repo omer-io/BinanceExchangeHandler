@@ -9,7 +9,7 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/basic_file_sink.h"
-#include "exchangeInfoClass.h"
+//#include "exchangeInfoClass.h"
 
 #include <vector>
 #include <map>
@@ -20,24 +20,12 @@
 std::mutex binanceExchangeMutex;
 
 // function to make HTTP request and get data
-void fetchData(exchangeInfo& binanceExchange, std::string baseUrl, std::string endpoint) {
+void fetchData(exchangeInfo& binanceExchange, std::string baseUrl, std::string endpoint, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx) {
 
     auto const host = baseUrl.c_str();
     auto const port = "443";
     auto const target = endpoint.c_str();
     int version = 11;
-    
-    // The io_context is required for all I/O
-    net::io_context ioc;
-
-    // The SSL context is required, and holds certificates
-    ssl::context ctx{ssl::context::tlsv12_client};
-
-    // This holds the root certificate used for verification
-    load_root_certificates(ctx);
-
-    // Verify the remote server's certificate
-    ctx.set_verify_mode(ssl::verify_peer);
 
     spdlog::info("Starting async HTTP request to host: {}, endpoint: {}", host, target);
     // Launch the asynchronous operation
@@ -45,66 +33,11 @@ void fetchData(exchangeInfo& binanceExchange, std::string baseUrl, std::string e
     // ensure that handlers do not execute concurrently.
     std::make_shared<session>(
         net::make_strand(ioc),
-        ctx
+        ctx, binanceExchange, baseUrl
         )->run(host, port, target, version);
 
-    // Run the I/O service. The call will return when
-    // the get operation is complete.
-    ioc.run();
     spdlog::info("HTTP request completed.");
 
-    // store retured response in a variable of type http::response<http::string_body>
-    http::response<http::string_body> apiResponse;
-
-    // Call to function that retrieves the HTTP response
-    apiResponse = returnResponse();
-    //std::cout << apiResponse << std::endl;
-
-    // Parse body of HTTP response as JSON
-    rapidjson::Document fullData;
-    fullData.Parse(apiResponse.body().c_str());
-
-    // Check if parsed data is object and contains symbols array
-    if (!fullData.IsObject() || !fullData.HasMember("symbols") || !fullData["symbols"].IsArray()) {
-        spdlog::error("Invalid JSON format or missing symbols array.");
-    }
-
-    // Access the "symbols" array
-    const auto& symbolsArray = fullData["symbols"];
-
-    // iterate over array
-    for (const auto& symbol : symbolsArray.GetArray()) {
-        symbolInfo info;                                    // structure to hold symbol info
-        info.symbol = symbol["symbol"].GetString();         // get symbol name
-        info.quoteAsset = symbol["quoteAsset"].GetString(); // get quote asset
-        if (symbol.HasMember("status")){
-            info.status = symbol["status"].GetString();     // get status for spot and coin future
-        }
-        if (symbol.HasMember("contractStatus")){
-            info.status = symbol["contractStatus"].GetString();     // since usd future api has key contractStatus instead of status
-        }           
-
-        // Iterate over filters array
-        for (const auto& filter : symbol["filters"].GetArray()) {
-            std::string filterType = filter["filterType"].GetString();  // get filter type
-            if (filterType == "PRICE_FILTER") {
-                info.tickSize = filter["tickSize"].GetString();         // get tick size if filter is PRICE_FILTER
-            } else if (filterType == "LOT_SIZE") {
-                info.stepSize = filter["stepSize"].GetString();         // get step size if filter is LOT_SIZE
-            }
-        }
-
-        // Store symbol info in binanceExchange relevant map with symbol name as key
-        if(baseUrl == "api.binance.com") { binanceExchange.spotSymbols[info.symbol] = info; }
-        if(baseUrl == "dapi.binance.com") { binanceExchange.usdSymbols[info.symbol] = info; }
-        if(baseUrl == "fapi.binance.com") { binanceExchange.coinSymbols[info.symbol] = info; } 
-   
-    }
-
-    // Output total number of symbols found
-    if(baseUrl == "api.binance.com") { spdlog::info("Total SPOT symbols: {}", binanceExchange.spotSymbols.size()); }
-    if(baseUrl == "dapi.binance.com") { spdlog::info("Total usd futures symbols: {}", binanceExchange.usdSymbols.size()); }
-    if(baseUrl == "fapi.binance.com") { spdlog::info("Total coin futures symbols: {}", binanceExchange.coinSymbols.size());}
 }
 
 
