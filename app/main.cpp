@@ -72,23 +72,18 @@ void readConfig(std::string configFile) {
 }
 
 // Function to fetch data of all 3 endpoints
-void fetchAll(const boost::system::error_code& /*e*/, boost::asio::steady_timer* t, boost::asio::io_context& ioc){
+void fetchAll(const boost::system::error_code& /*e*/, boost::asio::steady_timer* t, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx){
     
     spdlog::info("Fetching all data");  
 
-    // Create three threads to fetch data from each endpoint  
-    std::thread spotThread (fetchData, std::ref(binanceExchange), spotExchangeBaseUrl, spotExchangeEndpoint);
-    std::thread usdFutureThread (fetchData, std::ref(binanceExchange), usdFutureExchangeBaseUrl, usdFutureEndpoint);
-    std::thread coinFutureThread (fetchData, std::ref(binanceExchange), coinFutureExchangeBaseUrl, coinFutureEndpoint);
-
-    // Wait for each thread to finish fetching data
-    spotThread.join();
-    usdFutureThread.join();
-    coinFutureThread.join();
+    // Create fetch data func to fetch data from each endpoint  
+    fetchData(binanceExchange, spotExchangeBaseUrl, spotExchangeEndpoint, ioc, ctx);
+    fetchData(binanceExchange, usdFutureExchangeBaseUrl, usdFutureEndpoint, ioc, ctx);
+    fetchData(binanceExchange, coinFutureExchangeBaseUrl, coinFutureEndpoint, ioc, ctx);
 
     // Set the timer to expire in 60 seconds and wait for next fetch
     t->expires_at(t->expiry() + boost::asio::chrono::seconds(35));
-    t->async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, t, std::ref(ioc)));
+    t->async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, t, std::ref(ioc), std::ref(ctx)));
 
     spdlog::info("Fetch all data completed");    
 }
@@ -165,7 +160,7 @@ int main() {
     boost::asio::steady_timer t(io, boost::asio::chrono::seconds(35));
 
     // call back fetchAll function when timer expires
-    t.async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, &t, std::ref(io)));
+    t.async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, &t, std::ref(io), std::ref(ctx)));
 
     // Run IO context
     io.run();

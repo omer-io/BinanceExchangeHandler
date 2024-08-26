@@ -1,5 +1,6 @@
 #include <map>
 #include <string>
+#include <boost/asio/ssl.hpp>
 
 // struct symbolInfo to store required data of symbols
 struct symbolInfo{
@@ -15,7 +16,7 @@ class exchangeInfo{
 };
 
 // functions declared here are defined in src/getApiData.cpp
-void fetchData(exchangeInfo&, std::string, std::string);
+void fetchData(exchangeInfo&, std::string, std::string, boost::asio::io_context&, boost::asio::ssl::context&);
 void readQuery(exchangeInfo&);
 void query(exchangeInfo&, std::string, std::string, std::string, std::string);
 void setLogLevelForBM();
