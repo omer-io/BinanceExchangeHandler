@@ -251,11 +251,6 @@ void readQuery(exchangeInfo& binanceExchange) {
             std::string queryMarket = (*itr)["market_type"].GetString();
             std::string querySymbol = (*itr)["instrument_name"].GetString();
 
-            // std::cout << "Query ID: " << queryID << std::endl;
-            // std::cout << "Query Type: " << queryType << std::endl;
-            // std::cout << "Market Type: " << queryMarket << std::endl;
-            // std::cout << "Instrument Name: " << querySymbol << std::endl;
-
             // Check if the query has a status field
             if (itr->HasMember("data")) {
                 if ((*itr)["data"].HasMember("status")) {
