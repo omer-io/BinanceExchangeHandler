@@ -1,4 +1,9 @@
 
+#include <vector>
+#include <map>
+#include <thread>
+#include <mutex>
+
 #include "https.h"
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/writer.h"
@@ -9,12 +14,6 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/basic_file_sink.h"
-//#include "exchangeInfoClass.h"
-
-#include <vector>
-#include <map>
-#include <thread>
-#include <mutex>
 
 // mutex to protect access to shared maps
 std::mutex binanceExchangeMutex;

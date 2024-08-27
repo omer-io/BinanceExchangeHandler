@@ -13,16 +13,16 @@
 //
 //------------------------------------------------------------------------------
 
-#include "example/common/root_certificates.hpp"
-
-#include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
-#include <boost/beast/version.hpp>
-#include <boost/asio/ssl.hpp>
-#include <boost/asio/strand.hpp>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+
+#include "example/common/root_certificates.hpp"
+#include "boost/beast/core.hpp"
+#include "boost/beast/http.hpp"
+#include "boost/beast/version.hpp"
+#include "boost/asio/ssl.hpp"
+#include "boost/asio/strand.hpp"
 #include "exchangeInfoClass.h"
 #include "rapidjson/document.h"
 #include "spdlog/spdlog.h"

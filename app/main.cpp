@@ -12,7 +12,7 @@
 #include "spdlog/sinks/basic_file_sink.h"
 #include "exchangeInfoClass.h"
 #include "example/common/root_certificates.hpp"
-#include <boost/asio/ssl.hpp>
+#include "boost/asio/ssl.hpp"
 
 // global variables to store base url and endpoints info
 std::string spotExchangeBaseUrl, usdFutureExchangeBaseUrl, coinFutureExchangeBaseUrl;
@@ -82,7 +82,7 @@ void fetchAll(const boost::system::error_code& /*e*/, boost::asio::steady_timer*
     fetchData(binanceExchange, coinFutureExchangeBaseUrl, coinFutureEndpoint, ioc, ctx);
 
     // Set the timer to expire in 60 seconds and wait for next fetch
-    t->expires_at(t->expiry() + boost::asio::chrono::seconds(35));
+    t->expires_at(t->expiry() + boost::asio::chrono::seconds(requestInterval));
     t->async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, t, std::ref(ioc), std::ref(ctx)));
 
     spdlog::info("Fetch all data completed");    
@@ -157,7 +157,7 @@ int main() {
     ctx.set_verify_mode(ssl::verify_peer);
 
     // timer to fetch data every 60 sec
-    boost::asio::steady_timer t(io, boost::asio::chrono::seconds(35));
+    boost::asio::steady_timer t(io, boost::asio::chrono::seconds(requestInterval));
 
     // call back fetchAll function when timer expires
     t.async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, &t, std::ref(io), std::ref(ctx)));

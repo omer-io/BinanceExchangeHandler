@@ -5,7 +5,7 @@
 
 
 // Test fetchData function
-TEST(FetchDataTest, ValidResponse) {
+TEST(FetchDataFunctionTest, ValidResponse) {
     exchangeInfo binanceExchange;
 
     // base URL and endpoint for testing
