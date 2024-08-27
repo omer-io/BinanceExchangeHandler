@@ -109,6 +109,7 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
                 binanceExchange.spotSymbols.erase(it);
                 spdlog::info("Deleted symbol {}", querySymbol);
                 deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
+                answers.AddMember("delete", deleteDetails, allocator);
             } 
         }
         else if(queryMarket == "usd_futures") {
@@ -117,6 +118,7 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
                 binanceExchange.usdSymbols.erase(it);
                 spdlog::info("Deleted symbol {}", querySymbol);
                 deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
+                answers.AddMember("delete", deleteDetails, allocator);
             } 
         }
         else if(queryMarket == "coin_futures") {
@@ -125,13 +127,13 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
                 binanceExchange.coinSymbols.erase(it);
                 spdlog::info("Deleted symbol {}", querySymbol);
                 deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
+                answers.AddMember("delete", deleteDetails, allocator);
             } 
         }
         else {
             spdlog::warn("Symbol {} not found for deletion.", querySymbol);
         }
 
-        answers.AddMember("delete", deleteDetails, allocator);
     }
     // unlock after performing query    
     binanceExchangeMutex.unlock();
@@ -155,13 +157,13 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
 void readQuery(exchangeInfo& binanceExchange) {
 
     // variables to keep track of last query ID for each market type
-    int usdFuturePrevQueryID, spotPrevQueryID, coinFuturePrevQueryID;
+    std::vector<long int> prevIDs;
 
     // infinite loop to continuously process queries
     while(true){
 
         // Variables to store query details
-        int queryID;
+        long int queryID;
         std::string queryType, queryMarket, querySymbol, queryStatus;
 
         // Load and parse the JSON query file
@@ -192,8 +194,15 @@ void readQuery(exchangeInfo& binanceExchange) {
                     // std::cout << "Status: " << queryStatus << std::endl;
                 }
             }
+            bool idFlag = true;
             // execute query if it has not been processed before for the same market
-            if(queryID != spotPrevQueryID && queryID != usdFuturePrevQueryID && queryID != coinFuturePrevQueryID){
+            for(int index = 0; index < prevIDs.size(); ++index){
+                if(queryID == prevIDs[index]){
+                    idFlag = false;
+                    break;
+                }
+            }
+            if(idFlag == true){
                 if(queryMarket == "SPOT"){
                     query(binanceExchange, queryMarket, querySymbol, queryType, queryStatus);
                 }
@@ -205,9 +214,7 @@ void readQuery(exchangeInfo& binanceExchange) {
                 }
             }
             // Update the last processed query ID
-            if(queryMarket == "SPOT"){ spotPrevQueryID = queryID; }
-            if(queryMarket == "usd_futures"){ usdFuturePrevQueryID = queryID; }
-            if(queryMarket == "coin_futures"){ coinFuturePrevQueryID = queryID; }
+            prevIDs.push_back(queryID);
         }
         // Sleep for 1 sec before reading the file again
         std::this_thread::sleep_for(std::chrono::seconds(1));
