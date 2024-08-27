@@ -42,14 +42,35 @@ void fetchData(exchangeInfo& binanceExchange, std::string baseUrl, std::string e
 void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string querySymbol, std::string queryType, std::string queryStatus){
 
     spdlog::info("Processing query: Market = {}, Symbol = {}, Type = {}", queryMarket, querySymbol, queryType);
+    if(queryMarket == "SPOT"){
+        auto it = binanceExchange.spotSymbols.find(querySymbol);
+        if (it == binanceExchange.spotSymbols.end()){
+        spdlog::error("{}: symbol does not exist", querySymbol);
+        return;            
+        }
+    }
+    if(queryMarket == "usd_futures"){
+        auto it = binanceExchange.usdSymbols.find(querySymbol);
+        if (it == binanceExchange.usdSymbols.end()){
+        spdlog::error("{}: symbol does not exist", querySymbol);
+        return;            
+        }
+    }
+        if(queryMarket == "coin_futures"){
+        auto it = binanceExchange.coinSymbols.find(querySymbol);
+        if (it == binanceExchange.coinSymbols.end()){
+        spdlog::error("{}: symbol does not exist", querySymbol);
+        return;            
+        }
+    }
     // Check if the symbol exists in any of the markets 
-    auto it = binanceExchange.spotSymbols.find(querySymbol), it2 = binanceExchange.usdSymbols.find(querySymbol), it3 = binanceExchange.coinSymbols.find(querySymbol);
+    //auto it = binanceExchange.spotSymbols.find(querySymbol), it2 = binanceExchange.usdSymbols.find(querySymbol), it3 = binanceExchange.coinSymbols.find(querySymbol);
     
     // If symbol is not found in any market, print an error message and exit
-    if (it == binanceExchange.spotSymbols.end() && it2 == binanceExchange.usdSymbols.end() && it3 == binanceExchange.coinSymbols.end()) {
-        spdlog::error("{}: symbol does not exist", querySymbol);
-        return;
-    } 
+    // if (it == binanceExchange.spotSymbols.end() && it2 == binanceExchange.usdSymbols.end() && it3 == binanceExchange.coinSymbols.end()) {
+    //     spdlog::error("{}: symbol does not exist", querySymbol);
+    //     return;
+    // } 
 
     // Retrieve symbol info based on specified market asreference to access original symbol data
     symbolInfo* temp = nullptr;
@@ -203,15 +224,7 @@ void readQuery(exchangeInfo& binanceExchange) {
                 }
             }
             if(idFlag == true){
-                if(queryMarket == "SPOT"){
-                    query(binanceExchange, queryMarket, querySymbol, queryType, queryStatus);
-                }
-                if(queryMarket == "usd_futures"){
-                    query(binanceExchange, queryMarket, querySymbol, queryType, queryStatus);
-                }
-                if(queryMarket == "coin_futures"){
-                    query(binanceExchange, queryMarket, querySymbol, queryType, queryStatus);
-                }
+                query(binanceExchange, queryMarket, querySymbol, queryType, queryStatus);
             }
             // Update the last processed query ID
             prevIDs.push_back(queryID);
