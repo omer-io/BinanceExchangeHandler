@@ -1,5 +1,8 @@
 #include "gtest/gtest.h"
 #include "exchangeInfoClass.h"
+#include "example/common/root_certificates.hpp"
+#include <boost/asio/ssl.hpp>
+
 
 // Test fetchData function
 TEST(FetchDataTest, ValidResponse) {
@@ -8,9 +11,15 @@ TEST(FetchDataTest, ValidResponse) {
     // base URL and endpoint for testing
     std::string baseUrl = "api.binance.com";
     std::string endpoint = "/api/v3/exchangeInfo";
-    
+
+    boost::asio::io_context io;
+    boost::asio::ssl::context ctx{ssl::context::tlsv12_client};
+    load_root_certificates(ctx);
+    ctx.set_verify_mode(ssl::verify_peer);
+
     // Call fetchData 
-    fetchData(binanceExchange, baseUrl, endpoint);
+    fetchData(binanceExchange, baseUrl, endpoint, io, ctx);
+    io.run();
 
     // check if symbols > 0
     EXPECT_GT(binanceExchange.spotSymbols.size(), 0);

@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.25.1)
 project(main)
 
-# set(CMAKE_CXX_STANDARD 17)
-# set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules/")
 
 find_package(OpenSSL REQUIRED)
@@ -21,7 +18,7 @@ add_subdirectory(googletest)
 link_libraries(gtest)
 
 add_subdirectory(benchmark)
-# add_subdirectory(unittest)
+add_subdirectory(unittest)
 
 add_executable(main app/main.cpp src/getApiData.cpp)
 

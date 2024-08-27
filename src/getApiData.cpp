@@ -36,8 +36,6 @@ void fetchData(exchangeInfo& binanceExchange, std::string baseUrl, std::string e
         ctx, binanceExchange, baseUrl
         )->run(host, port, target, version);
 
-    spdlog::info("HTTP request completed.");
-
 }
 
 
