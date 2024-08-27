@@ -5,7 +5,7 @@
 
 
 // Test fetchData function
-TEST(FetchDataFunctionTest, ValidResponse) {
+TEST(fetchDataFunctionTest, validResponse) {
     exchangeInfo binanceExchange;
 
     // base URL and endpoint for testing
@@ -28,7 +28,7 @@ TEST(FetchDataFunctionTest, ValidResponse) {
 }
 
 // Test for update operation in query function
-TEST(QueryFunctionTest, UpdateRequest) {
+TEST(queryFunctionTest, updateRequest) {
     exchangeInfo binanceExchange;
 
     // Add a symbol
@@ -50,6 +50,33 @@ TEST(QueryFunctionTest, UpdateRequest) {
     query(binanceExchange, market, symbol, queryType, queryStatus);
 
     EXPECT_EQ(binanceExchange.spotSymbols[symbol].status, "PENDING");
+}
+
+TEST(queryFunctionTest, deleteRequest) {
+    exchangeInfo binanceExchange;
+
+    // base URL and endpoint for testing
+    std::string baseUrl = "api.binance.com";
+    std::string endpoint = "/api/v3/exchangeInfo";
+
+    boost::asio::io_context io;
+    boost::asio::ssl::context ctx{ssl::context::tlsv12_client};
+    load_root_certificates(ctx);
+    ctx.set_verify_mode(ssl::verify_peer);
+
+    // Call fetchData 
+    fetchData(binanceExchange, baseUrl, endpoint, io, ctx);
+    io.run();
+
+    // Update status
+    std::string market = "SPOT";
+    std::string symbol = "ETHUSDT";
+    std::string queryType = "DELETE";
+    std::string queryStatus = "";
+
+    query(binanceExchange, market, symbol, queryType, queryStatus);
+
+    EXPECT_NE(binanceExchange.spotSymbols[symbol].symbol, "ETHUSDT");
 }
 
 int main() {
