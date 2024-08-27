@@ -220,7 +220,7 @@ public:
 
         result = res_;
         processResponse(result, binanceExchangeInfo, baseUrl);
-
+        spdlog::info("HTTP request completed.");
         // Set a timeout on the operation
         beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(40));
 

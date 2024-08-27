@@ -21,11 +21,10 @@ To build and run the project locally, follow these steps:
 3. Move config.json and query.json into build: `mv config.json query.json build/`
 4. Navigate to the build directory: `cd build`
 5. Run CMake: `cmake ..`
-6. To disable tests and benchmarks run CMake with options: `cmake .. -DENABLE_UNITTEST=OFF -DENABLE_BENCHMARK=OFF`
-7. Build the project: `make`
-8.  Run main app: `./app/main`
-9. Run benchmarks: `./benchmark/bm`
-10. Run unit tests: `./unittest/test`
+6. Build the project: `make`
+7.  Run main app: `./app/main`
+8. Run benchmarks: `./benchmark/bm`
+9. Run unit tests: `./unittest/test`
 
 
 To build and run the project in container, follow these steps:

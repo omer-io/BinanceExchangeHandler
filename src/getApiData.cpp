@@ -62,7 +62,9 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
     rapidjson::Document answers;
     answers.SetObject();
     auto& allocator = answers.GetAllocator();
-
+    
+    // lock while performing query on data structure
+    binanceExchangeMutex.lock();
     // Process query based on type
     if(queryType == "GET"){
 
@@ -101,11 +103,13 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
 
         // DELETE request: remove symbol from respective market and output delete status to answers.json
         spdlog::info("Deleting data for symbol: {}", querySymbol);
+        rapidjson::Value deleteDetails(rapidjson::kObjectType);
         if(queryMarket == "SPOT") {
             auto it = binanceExchange.spotSymbols.find(querySymbol);
             if (it != binanceExchange.spotSymbols.end()) {
                 binanceExchange.spotSymbols.erase(it);
                 spdlog::info("Deleted symbol {}", querySymbol);
+                deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
             } 
         }
         else if(queryMarket == "usd_futures") {
@@ -113,6 +117,7 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
             if (it != binanceExchange.usdSymbols.end()) {
                 binanceExchange.usdSymbols.erase(it);
                 spdlog::info("Deleted symbol {}", querySymbol);
+                deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
             } 
         }
         else if(queryMarket == "coin_futures") {
@@ -120,18 +125,17 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
             if (it != binanceExchange.coinSymbols.end()) {
                 binanceExchange.coinSymbols.erase(it);
                 spdlog::info("Deleted symbol {}", querySymbol);
+                deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
             } 
         }
         else {
             spdlog::warn("Symbol {} not found for deletion.", querySymbol);
         }
 
-        rapidjson::Value deleteDetails(rapidjson::kObjectType);
-        deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
-
         answers.AddMember("delete", deleteDetails, allocator);
     }
-   
+    // unlock after performing query    
+    binanceExchangeMutex.unlock();
     // Write to answers.json file
     FILE* fp2 = fopen("answers.json", "a");
     if (!fp2) {
@@ -192,16 +196,13 @@ void readQuery(exchangeInfo& binanceExchange) {
             // execute query if it has not been processed before for the same market
             if(queryID != spotPrevQueryID && queryID != usdFuturePrevQueryID && queryID != coinFuturePrevQueryID){
                 if(queryMarket == "SPOT"){
-                    std::thread queryThread (query, std::ref(binanceExchange), queryMarket, querySymbol, queryType, queryStatus);
-                    queryThread.join();
+                    query(binanceExchange, queryMarket, querySymbol, queryType, queryStatus);
                 }
                 if(queryMarket == "usd_futures"){
-                    std::thread usdFutureQueryThread (query, std::ref(binanceExchange), queryMarket, querySymbol, queryType, queryStatus);
-                    usdFutureQueryThread.join();
+                    query(binanceExchange, queryMarket, querySymbol, queryType, queryStatus);
                 }
                 if(queryMarket == "coin_futures"){
-                    std::thread coinFutureQueryThread (query, std::ref(binanceExchange), queryMarket, querySymbol, queryType, queryStatus);
-                    coinFutureQueryThread.join();
+                    query(binanceExchange, queryMarket, querySymbol, queryType, queryStatus);
                 }
             }
             // Update the last processed query ID
