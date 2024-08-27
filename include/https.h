@@ -151,7 +151,7 @@ public:
             return fail(ec, "resolve");
 
         // Set a timeout on the operation
-        beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
+        beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(40));
 
         // Make the connection on the IP address we get from a lookup
         beast::get_lowest_layer(stream_).async_connect(
@@ -182,7 +182,7 @@ public:
             return fail(ec, "handshake");
 
         // Set a timeout on the operation
-        beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
+        beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(40));
 
         // Send the HTTP request to the remote host
         http::async_write(stream_, req_,
@@ -218,13 +218,11 @@ public:
         if(ec)
             return fail(ec, "read");
 
-        // Write the message to standard out
-        //std::cout << res_ << std::endl;
         result = res_;
         processResponse(result, binanceExchangeInfo, baseUrl);
 
         // Set a timeout on the operation
-        beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
+        beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(40));
 
         // Gracefully close the stream
         stream_.async_shutdown(

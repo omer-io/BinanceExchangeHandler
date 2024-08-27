@@ -20,7 +20,7 @@ include_directories(include)
 add_subdirectory(googletest)
 link_libraries(gtest)
 
-# add_subdirectory(benchmark)
+add_subdirectory(benchmark)
 # add_subdirectory(unittest)
 
 add_executable(main app/main.cpp src/getApiData.cpp)
