@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25.1)
-project(main)
+project(BINANCEINFOHANDLER)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -20,10 +20,9 @@ include_directories(include)
 add_subdirectory(googletest)
 link_libraries(gtest)
 
+add_subdirectory(app)
 add_subdirectory(benchmark)
 add_subdirectory(unittest)
-
-add_executable(main app/main.cpp src/getApiData.cpp)
 
 
 

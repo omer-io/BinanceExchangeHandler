@@ -1,3 +1,6 @@
+cmake_minimum_required(VERSION 3.25.1)
+project(benchmarks)
+
 include(ExternalProject)
 
 ExternalProject_Add(benchmark
@@ -12,6 +15,6 @@ ExternalProject_Add(benchmark
 
 ExternalProject_Get_Property(benchmark binary_dir)
 
-add_executable(bm benchmark.cpp ${CMAKE_SOURCE_DIR}/src/getApiData.cpp)
+add_executable(benchmarks benchmark.cpp ${CMAKE_SOURCE_DIR}/src/getApiData.cpp)
 
-target_link_libraries(bm ${binary_dir}/src/libbenchmark.a pthread)
+target_link_libraries(benchmarks ${binary_dir}/src/libbenchmark.a pthread)
