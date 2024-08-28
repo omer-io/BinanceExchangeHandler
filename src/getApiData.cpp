@@ -172,13 +172,13 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
 void readQuery(exchangeInfo& binanceExchange) {
 
     // variables to keep track of last query ID for each market type
-    std::vector<long int> prevIDs;
+    std::vector<long long int> prevIDs;
 
     // infinite loop to continuously process queries
     while(true){
 
         // Variables to store query details
-        long int queryID;
+        long long int queryID;
         std::string queryType, queryMarket, querySymbol, queryStatus;
 
         // Load and parse the JSON query file
