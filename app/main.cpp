@@ -26,9 +26,6 @@ struct logsInfo {
     bool console;
 } logsConfig;
 
-// instance of class excahngeInfo defined in exchangeInfoClass.h, stores data of all endpoints in respective map
-exchangeInfo binanceExchange;
-
 // read config.json for logging, request url, request interval
 void readConfig(std::string configFile) {
 
@@ -72,7 +69,7 @@ void readConfig(std::string configFile) {
 }
 
 // Function to fetch data of all 3 endpoints
-void fetchAll(const boost::system::error_code& /*e*/, boost::asio::steady_timer* t, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx){
+void fetchAll(exchangeInfo& binanceExchange, const boost::system::error_code& /*e*/, boost::asio::steady_timer* t, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx){
     
     spdlog::info("Fetching all data");  
 
@@ -128,6 +125,9 @@ int main() {
     // set up logging system
     setSpdLogs();
 
+    // instance of class excahngeInfo defined in exchangeInfoClass.h, stores data of all endpoints in respective map
+    exchangeInfo binanceExchange;
+
     spdlog::info("Logging Level: {}", logsConfig.level);
     spdlog::info("Logging to File: {}", logsConfig.file ? "Enabled" : "Disabled");
     spdlog::info("Logging to Console: {}", logsConfig.console ? "Enabled" : "Disabled");
@@ -160,7 +160,7 @@ int main() {
     boost::asio::steady_timer t(io, boost::asio::chrono::seconds(requestInterval));
 
     // call back fetchAll function when timer expires
-    t.async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, &t, std::ref(io), std::ref(ctx)));
+    t.async_wait(boost::bind(fetchAll, binanceExchange, boost::asio::placeholders::error, &t, std::ref(io), std::ref(ctx)));
 
     // Run IO context
     io.run();
