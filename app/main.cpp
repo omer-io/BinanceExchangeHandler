@@ -168,11 +168,6 @@ int main() {
    // Wait for the readQuery thread to finish
     readQueryThread.join();
     
-    // // // std::thread ioThread(runIoContext, std::ref(io));
-
-    // // // ioThread.join();
-
-
     return 0;
 }
 
