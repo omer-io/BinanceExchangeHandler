@@ -73,16 +73,16 @@ void processResponse(http::response<http::string_body>& result,exchangeInfo* bin
         }
 
         // Store symbol info in binanceExchange relevant map with symbol name as key
-        if(baseUrl == "api.binance.com") { binanceExchange->spotSymbols[info.symbol] = info; }
-        if(baseUrl == "dapi.binance.com") { binanceExchange->usdSymbols[info.symbol] = info; }
-        if(baseUrl == "fapi.binance.com") { binanceExchange->coinSymbols[info.symbol] = info; } 
+        if(baseUrl == "api.binance.com") { binanceExchange->setSpotSymbol(info.symbol, info); }
+        if(baseUrl == "dapi.binance.com") { binanceExchange->setUsdSymbol(info.symbol, info); }
+        if(baseUrl == "fapi.binance.com") { binanceExchange->setCoinSymbol(info.symbol, info); } 
    
     }
 
     // Output total number of symbols found
-    if(baseUrl == "api.binance.com") { spdlog::info("Total SPOT symbols: {}", binanceExchange->spotSymbols.size()); }
-    if(baseUrl == "dapi.binance.com") { spdlog::info("Total usd futures symbols: {}", binanceExchange->usdSymbols.size()); }
-    if(baseUrl == "fapi.binance.com") { spdlog::info("Total coin futures symbols: {}", binanceExchange->coinSymbols.size());}
+    if(baseUrl == "api.binance.com") { spdlog::info("Total SPOT symbols: {}", binanceExchange->getSpotSymbolsSize()); }
+    if(baseUrl == "dapi.binance.com") { spdlog::info("Total usd futures symbols: {}", binanceExchange->getUsdSymbolsSize()); }
+    if(baseUrl == "fapi.binance.com") { spdlog::info("Total coin futures symbols: {}", binanceExchange->getCoinSymbolsSize());}
 }
 
 // Report a failure

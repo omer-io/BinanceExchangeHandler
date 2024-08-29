@@ -80,7 +80,7 @@ void fetchAll(exchangeInfo& binanceExchange, const boost::system::error_code& /*
 
     // Set the timer to expire in 60 seconds and wait for next fetch
     t->expires_at(t->expiry() + boost::asio::chrono::seconds(requestInterval));
-    t->async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, t, std::ref(ioc), std::ref(ctx)));
+    t->async_wait(boost::bind(fetchAll, std::ref(binanceExchange), boost::asio::placeholders::error, t, std::ref(ioc), std::ref(ctx)));
 
     spdlog::info("Fetch all data completed");    
 }
@@ -160,7 +160,7 @@ int main() {
     boost::asio::steady_timer t(io, boost::asio::chrono::seconds(requestInterval));
 
     // call back fetchAll function when timer expires
-    t.async_wait(boost::bind(fetchAll, binanceExchange, boost::asio::placeholders::error, &t, std::ref(io), std::ref(ctx)));
+    t.async_wait(boost::bind(fetchAll, std::ref(binanceExchange), boost::asio::placeholders::error, &t, std::ref(io), std::ref(ctx)));
 
     // Run IO context
     io.run();

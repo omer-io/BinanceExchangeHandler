@@ -16,54 +16,107 @@ private:
 
 public:
     // Getter for spotSymbols
-    symbolInfo getSpotSymbol(const std::string& key) const {
+    symbolInfo getSpotSymbol( std::string& key) {
         auto it = spotSymbols.find(key);
-        if (it != spotSymbols.end()) {
             return it->second;
-        }
-        // Return a default symbolInfo object if the key is not found
-        return symbolInfo{};
     }
 
     // Setter for spotSymbols
-    void setSpotSymbol(const std::string& key, const symbolInfo& value) {
+    void setSpotSymbol(std::string& key, symbolInfo& value) {
         spotSymbols[key] = value;
     }
 
     // Getter for usdSymbols
-    symbolInfo getUsdSymbol(const std::string& key) const {
+    symbolInfo getUsdSymbol(std::string& key){
         auto it = usdSymbols.find(key);
-        if (it != usdSymbols.end()) {
             return it->second;
-        }
-        // Return a default symbolInfo object if the key is not found
-        return symbolInfo{};
     }
 
     // Setter for usdSymbols
-    void setUsdSymbol(const std::string& key, const symbolInfo& value) {
+    void setUsdSymbol(std::string& key, symbolInfo& value){
         usdSymbols[key] = value;
     }
 
     // Getter for coinSymbols
-    symbolInfo getCoinSymbol(const std::string& key) const {
+    symbolInfo getCoinSymbol(std::string& key) {
         auto it = coinSymbols.find(key);
-        if (it != coinSymbols.end()) {
             return it->second;
-        }
-        // Return a default symbolInfo object if the key is not found
-        return symbolInfo{};
     }
 
     // Setter for coinSymbols
-    void setCoinSymbol(const std::string& key, const symbolInfo& value) {
+    void setCoinSymbol( std::string& key, symbolInfo& value) {
         coinSymbols[key] = value;
+    }
+
+    // Function to get the size of spotSymbols
+    size_t getSpotSymbolsSize(){
+        return spotSymbols.size();
+    }
+
+    // Function to get the size of usdSymbols
+    size_t getUsdSymbolsSize(){
+        return usdSymbols.size();
+    }
+
+    // Function to get the size of coinSymbols
+    size_t getCoinSymbolsSize(){
+        return coinSymbols.size();
+    }
+
+    void updateSpotStatus(std::string key, std::string newStatus){
+        spotSymbols[key].status = newStatus;
+    }
+    void updateUsdStatus(std::string key, std::string newStatus){
+        usdSymbols[key].status = newStatus;
+    }
+    void updateCoinStatus(std::string key, std::string newStatus){
+        coinSymbols[key].status = newStatus;
+    }
+
+    void deleteSpotSymbol(std::string key){
+        auto it = spotSymbols.find(key);
+        spotSymbols.erase(it);
+    }
+    void deleteUsdSymbol(std::string key){
+        auto it = usdSymbols.find(key);
+        usdSymbols.erase(key);
+    }
+    void deleteCoinSymbol(std::string key){
+        auto it = coinSymbols.find(key);
+        coinSymbols.erase(key);
+    }
+
+        // check if spot symbol exists
+    bool spotSymbolexists(std::string& key){
+        auto it = spotSymbols.find(key);
+        if (it != spotSymbols.end()) {
+            return true;
+        }
+        return false;
+    }
+
+    // check if usd symbol exists
+    bool usdSymbolexists(std::string& key){
+        auto it = spotSymbols.find(key);
+        if (it != spotSymbols.end()) {
+            return true;
+        }
+        return false;
+    }
+
+    // check if coin symbol exists
+    bool coinSymbolexists(std::string& key){
+        auto it = spotSymbols.find(key);
+        if (it != spotSymbols.end()) {
+            return true;
+        }
+        return false;
     }
 };
 
 
 // functions declared here are defined in src/getApiData.cpp
-void fetchData(exchangeInfo&, std::string, std::string, boost::asio::io_context&, boost::asio::ssl::context&);
+void fetchData(exchangeInfo&, std::string&, std::string&, boost::asio::io_context&, boost::asio::ssl::context&);
 void readQuery(exchangeInfo&);
-void query(exchangeInfo&, std::string, std::string, std::string, std::string);
+void query(exchangeInfo&, std::string&, std::string&, std::string&, std::string&);
 void setLogLevelForBM();

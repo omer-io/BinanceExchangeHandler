@@ -19,7 +19,7 @@
 std::mutex binanceExchangeMutex;
 
 // function to make HTTP request and get data
-void fetchData(exchangeInfo& binanceExchange, std::string baseUrl, std::string endpoint, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx) {
+void fetchData(exchangeInfo& binanceExchange, std::string& baseUrl, std::string& endpoint, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx) {
 
     auto const host = baseUrl.c_str();
     auto const port = "443";
@@ -39,39 +39,36 @@ void fetchData(exchangeInfo& binanceExchange, std::string baseUrl, std::string e
 
 
 // function to perform queries
-void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string querySymbol, std::string queryType, std::string queryStatus){
+void query(exchangeInfo& binanceExchange, std::string& queryMarket, std::string& querySymbol, std::string& queryType, std::string& queryStatus){
 
     spdlog::info("Processing query: Market = {}, Symbol = {}, Type = {}", queryMarket, querySymbol, queryType);
 
     // Check if the symbol exists in any of the markets 
     if(queryMarket == "SPOT"){
-        auto it = binanceExchange.spotSymbols.find(querySymbol);
-        if (it == binanceExchange.spotSymbols.end()){
-        spdlog::error("{}: symbol does not exist", querySymbol);
-        return;            
+        if(!binanceExchange.spotSymbolexists(querySymbol)){
+            spdlog::error("{}: symbol does not exist", querySymbol);
+            return;   
         }
     }
     if(queryMarket == "usd_futures"){
-        auto it = binanceExchange.usdSymbols.find(querySymbol);
-        if (it == binanceExchange.usdSymbols.end()){
-        spdlog::error("{}: symbol does not exist", querySymbol);
-        return;            
+        if(!binanceExchange.usdSymbolexists(querySymbol)){
+            spdlog::error("{}: symbol does not exist", querySymbol);
+            return;   
         }
     }
         if(queryMarket == "coin_futures"){
-        auto it = binanceExchange.coinSymbols.find(querySymbol);
-        if (it == binanceExchange.coinSymbols.end()){
-        spdlog::error("{}: symbol does not exist", querySymbol);
-        return;            
+        if(!binanceExchange.coinSymbolexists(querySymbol)){
+            spdlog::error("{}: symbol does not exist", querySymbol);
+            return;   
         }
     }
 
     // Retrieve symbol info based on specified market asreference to access original symbol data
-    symbolInfo* temp = nullptr;
-    if (queryMarket == "SPOT") { temp = &binanceExchange.spotSymbols[querySymbol]; }
-    if (queryMarket == "usd_futures") { temp = &binanceExchange.usdSymbols[querySymbol]; }
-    if (queryMarket == "coin_futures") { temp = &binanceExchange.coinSymbols[querySymbol]; }
-
+    symbolInfo temp;
+    if (queryMarket == "SPOT") { temp = binanceExchange.getSpotSymbol(querySymbol); }
+    if (queryMarket == "usd_futures") { temp = binanceExchange.getUsdSymbol(querySymbol); }
+    if (queryMarket == "coin_futures") { temp = binanceExchange.getCoinSymbol(querySymbol); }
+    
     // Create a RapidJSON document to store the results
     rapidjson::Document answers;
     answers.SetObject();
@@ -79,6 +76,7 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
     
     // lock while performing query on data structure
     binanceExchangeMutex.lock();
+
     // Process query based on type
     if(queryType == "GET"){
 
@@ -86,30 +84,56 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
         spdlog::info("Getting spot data for {}", querySymbol);
 
         rapidjson::Value symbolDetails(rapidjson::kObjectType);
-        symbolDetails.AddMember("symbol", rapidjson::Value(temp->symbol.c_str(), allocator), allocator);
-        symbolDetails.AddMember("quoteAsset", rapidjson::Value(temp->quoteAsset.c_str(), allocator), allocator);
-        symbolDetails.AddMember("status", rapidjson::Value(temp->status.c_str(), allocator), allocator);
-        symbolDetails.AddMember("tickSize", rapidjson::Value(temp->tickSize.c_str(), allocator), allocator);
-        symbolDetails.AddMember("stepSize", rapidjson::Value(temp->stepSize.c_str(), allocator), allocator);
+        symbolDetails.AddMember("symbol", rapidjson::Value(temp.symbol.c_str(), allocator), allocator);
+        symbolDetails.AddMember("quoteAsset", rapidjson::Value(temp.quoteAsset.c_str(), allocator), allocator);
+        symbolDetails.AddMember("status", rapidjson::Value(temp.status.c_str(), allocator), allocator);
+        symbolDetails.AddMember("tickSize", rapidjson::Value(temp.tickSize.c_str(), allocator), allocator);
+        symbolDetails.AddMember("stepSize", rapidjson::Value(temp.stepSize.c_str(), allocator), allocator);
 
         answers.AddMember("data", symbolDetails, allocator);
         
-         
     }
 
     else if(queryType == "UPDATE"){
 
         // UPDATE request: modify symbol status and output update details to answers.json
         spdlog::info("Updating data for symbol: {}", querySymbol);
-        spdlog::info("Old Status: {}", temp->status);
-        temp->status = queryStatus;
-        spdlog::info("New Status: {}", temp->status);
 
-        rapidjson::Value updateDetails(rapidjson::kObjectType);
-        updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
-        updateDetails.AddMember("newStatus", rapidjson::Value(queryStatus.c_str(), allocator), allocator);
+        if(queryMarket == "SPOT"){
+            spdlog::info("Old Status: {}", temp.status);
+            binanceExchange.updateSpotStatus(querySymbol, queryStatus);
+            temp = binanceExchange.getSpotSymbol(querySymbol);
+            spdlog::info("New Status: {}", temp.status);
 
-        answers.AddMember("update", updateDetails, allocator);
+            rapidjson::Value updateDetails(rapidjson::kObjectType);
+            updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
+            updateDetails.AddMember("newStatus", rapidjson::Value(queryStatus.c_str(), allocator), allocator);
+            answers.AddMember("update", updateDetails, allocator);
+        }
+
+        if(queryMarket == "usd_futures"){
+            spdlog::info("Old Status: {}", temp.status);
+            binanceExchange.updateUsdStatus(querySymbol, queryStatus);
+            temp = binanceExchange.getUsdSymbol(querySymbol);
+            spdlog::info("New Status: {}", temp.status);
+
+            rapidjson::Value updateDetails(rapidjson::kObjectType);
+            updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
+            updateDetails.AddMember("newStatus", rapidjson::Value(queryStatus.c_str(), allocator), allocator);
+            answers.AddMember("update", updateDetails, allocator);
+        }
+
+        if(queryMarket == "coin_futures"){
+            spdlog::info("Old Status: {}", temp.status);
+            binanceExchange.updateCoinStatus(querySymbol, queryStatus);
+            temp = binanceExchange.getCoinSymbol(querySymbol);
+            spdlog::info("New Status: {}", temp.status);
+
+            rapidjson::Value updateDetails(rapidjson::kObjectType);
+            updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
+            updateDetails.AddMember("newStatus", rapidjson::Value(queryStatus.c_str(), allocator), allocator);
+            answers.AddMember("update", updateDetails, allocator);
+        }
 
     }
 
@@ -119,31 +143,23 @@ void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string q
         spdlog::info("Deleting data for symbol: {}", querySymbol);
         rapidjson::Value deleteDetails(rapidjson::kObjectType);
         if(queryMarket == "SPOT") {
-            auto it = binanceExchange.spotSymbols.find(querySymbol);
-            if (it != binanceExchange.spotSymbols.end()) {
-                binanceExchange.spotSymbols.erase(it);
-                spdlog::info("Deleted symbol {}", querySymbol);
-                deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
-                answers.AddMember("delete", deleteDetails, allocator);
-            } 
-        }
+            binanceExchange.deleteSpotSymbol(querySymbol);
+            spdlog::info("Deleted symbol {}", querySymbol);
+            deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
+            answers.AddMember("delete", deleteDetails, allocator);
+        } 
+
         else if(queryMarket == "usd_futures") {
-            auto it = binanceExchange.usdSymbols.find(querySymbol);
-            if (it != binanceExchange.usdSymbols.end()) {
-                binanceExchange.usdSymbols.erase(it);
-                spdlog::info("Deleted symbol {}", querySymbol);
-                deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
-                answers.AddMember("delete", deleteDetails, allocator);
-            } 
+            binanceExchange.deleteUsdSymbol(querySymbol);
+            spdlog::info("Deleted symbol {}", querySymbol);
+            deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
+            answers.AddMember("delete", deleteDetails, allocator);
         }
         else if(queryMarket == "coin_futures") {
-            auto it = binanceExchange.coinSymbols.find(querySymbol);
-            if (it != binanceExchange.coinSymbols.end()) {
-                binanceExchange.coinSymbols.erase(it);
-                spdlog::info("Deleted symbol {}", querySymbol);
-                deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
-                answers.AddMember("delete", deleteDetails, allocator);
-            } 
+            binanceExchange.deleteCoinSymbol(querySymbol);
+            spdlog::info("Deleted symbol {}", querySymbol);
+            deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
+            answers.AddMember("delete", deleteDetails, allocator);
         }
         else {
             spdlog::warn("Symbol {} not found for deletion.", querySymbol);
