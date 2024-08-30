@@ -14,7 +14,7 @@ ExternalProject_Add(benchmark
 
 ExternalProject_Get_Property(benchmark binary_dir)
 
-add_executable(benchmarks benchmark.cpp ${CMAKE_SOURCE_DIR}/src/BinanceExchange.cpp)
+add_executable(benchmarks benchmark.cpp ${CMAKE_SOURCE_DIR}/src/BinanceExchange.cpp ${CMAKE_SOURCE_DIR}/src/https.cpp)
 
 
 add_dependencies(benchmarks benchmark boost rapidjson spdlog)

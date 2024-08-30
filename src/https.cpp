@@ -60,7 +60,7 @@ void fail(beast::error_code ec, char const* what)
     std::cerr << what << ": " << ec.message() << "\n";
 }
 
-// http::response<http::string_body> result;
+http::response<http::string_body> result;
 
 session::session(net::any_io_executor ex, ssl::context& ctx, exchangeInfo& exchangeClass, std::string url) 
 : resolver_(ex), stream_(ex, ctx), binanceExchangeInfo(&exchangeClass), baseUrl(url) {}

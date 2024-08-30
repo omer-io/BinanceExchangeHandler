@@ -25,7 +25,7 @@ void processResponse(http::response<http::string_body>&, exchangeInfo*, std::str
 // Report a failure
 void fail(beast::error_code, char const*);
 
-http::response<http::string_body> result;
+// http::response<http::string_body> result;
 
 // Performs an HTTP GET and prints the response
 class session : public std::enable_shared_from_this<session>
