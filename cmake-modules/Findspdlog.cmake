@@ -2,9 +2,7 @@ include(ExternalProject)
 
 ExternalProject_Add(spdlog
     PREFIX ${CMAKE_BINARY_DIR}/spdlog
-    GIT_REPOSITORY https://github.com/gabime/spdlog.git
-    GIT_TAG v1.x
-    UPDATE_COMMAND ""
+    URL https://github.com/gabime/spdlog/archive/refs/tags/v1.14.1.tar.gz
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""

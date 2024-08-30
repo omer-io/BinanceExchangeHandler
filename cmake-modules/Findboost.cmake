@@ -2,8 +2,7 @@ include(ExternalProject)
 
 ExternalProject_Add(boost
     PREFIX ${CMAKE_BINARY_DIR}/boost
-    GIT_REPOSITORY https://github.com/boostorg/boost.git
-    GIT_TAG boost-1.86.0
+    URL https://github.com/boostorg/boost/releases/download/boost-1.86.0/boost-1.86.0-cmake.tar.xz
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""

@@ -18,7 +18,6 @@ link_libraries(${OPENSSL_LIBRARIES})
 include_directories(include)
 
 add_subdirectory(googletest)
-link_libraries(gtest)
 
 add_subdirectory(app)
 add_subdirectory(benchmark)

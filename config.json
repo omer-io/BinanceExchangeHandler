@@ -14,5 +14,5 @@
         "usd_futures_exchange_info_uri": "/dapi/v1/exchangeInfo",
         "coin_futures_exchange_info_uri": "/fapi/v1/exchangeInfo"
     },
-    "request_interval": 60
+    "request_interval": 35
  }
