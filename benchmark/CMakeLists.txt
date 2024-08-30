@@ -8,8 +8,6 @@ ExternalProject_Add(benchmark
     GIT_REPOSITORY https://github.com/google/benchmark
     GIT_TAG v1.8.5
     CMAKE_ARGS -DBENCHMARK_DOWNLOAD_DEPENDENCIES=on -DCMAKE_BUILD_TYPE=Release
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
     INSTALL_COMMAND ""
 )
 
@@ -17,4 +15,8 @@ ExternalProject_Get_Property(benchmark binary_dir)
 
 add_executable(benchmarks benchmark.cpp ${CMAKE_SOURCE_DIR}/src/getApiData.cpp)
 
-target_link_libraries(benchmarks ${binary_dir}/src/libbenchmark.a pthread)
+
+add_dependencies(benchmarks benchmark boost rapidjson spdlog)
+
+target_link_libraries(benchmarks ${CMAKE_SOURCE_DIR}/build2/benchmark/src/benchmark-build/src/libbenchmark.a pthread)
+

@@ -10,7 +10,6 @@ ExternalProject_Add(boost
 )
 
 ExternalProject_Get_Property(boost source_dir)
-message(${source_dir})
 include_directories(${source_dir}/libs/beast/include)
 include_directories(${source_dir}/libs/config/include)
 include_directories(${source_dir}/libs/core/include)
