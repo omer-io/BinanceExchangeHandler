@@ -10,7 +10,7 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/basic_file_sink.h"
-#include "exchangeInfoClass.h"
+#include "BinanceExchange.h"
 #include "example/common/root_certificates.hpp"
 #include "boost/asio/ssl.hpp"
 

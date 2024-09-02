@@ -1,5 +1,5 @@
 #include "benchmark/benchmark.h"
-#include "exchangeInfoClass.h"
+#include "BinanceExchange.h"
 #include "example/common/root_certificates.hpp"
 #include <boost/asio/ssl.hpp>
 
