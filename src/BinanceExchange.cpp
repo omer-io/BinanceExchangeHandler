@@ -4,7 +4,7 @@
 #include <thread>
 #include <mutex>
 
-#include "https.h"
+#include "getHttpsData.h"
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/document.h"
@@ -31,7 +31,7 @@ void fetchData(exchangeInfo& binanceExchange, std::string baseUrl, std::string e
     // The session is constructed with a strand to
     // ensure that handlers do not execute concurrently.
     std::make_shared<session>(
-        net::make_strand(ioc),
+        boost::asio::make_strand(ioc),
         ctx, binanceExchange, baseUrl
         )->run(host, port, target, version);
 

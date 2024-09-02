@@ -1,4 +1,4 @@
-#include "https.h"
+#include "getHttpsData.h"
 
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>
@@ -84,10 +84,10 @@ void session::run( char const* host, char const* port, char const* target, int v
     req_.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
 
     // Look up the domain name
-    resolver_.async_resolve(host, port, beast::bind_front_handler(&session::on_resolve, shared_from_this()));
+    resolver_.async_resolve(host, port, beast::bind_front_handler(&session::onResolve, shared_from_this()));
 }
 
-void session::on_resolve(beast::error_code ec, tcp::resolver::results_type results)
+void session::onResolve(beast::error_code ec, tcp::resolver::results_type results)
 {
     if(ec){
         return fail(ec, "resolve");
@@ -96,19 +96,19 @@ void session::on_resolve(beast::error_code ec, tcp::resolver::results_type resul
     beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(40));
 
     // Make the connection on the IP address we get from a lookup
-    beast::get_lowest_layer(stream_).async_connect(results, beast::bind_front_handler(&session::on_connect, shared_from_this()));
+    beast::get_lowest_layer(stream_).async_connect(results, beast::bind_front_handler(&session::onConnect, shared_from_this()));
 }
 
-void session::on_connect(beast::error_code ec, tcp::resolver::results_type::endpoint_type)
+void session::onConnect(beast::error_code ec, tcp::resolver::results_type::endpoint_type)
 {
     if(ec){
         return fail(ec, "connect");
     }
     // Perform the SSL handshake
-    stream_.async_handshake(ssl::stream_base::client, beast::bind_front_handler(&session::on_handshake, shared_from_this()));
+    stream_.async_handshake(ssl::stream_base::client, beast::bind_front_handler(&session::onHandshake, shared_from_this()));
 }
 
-void session::on_handshake(beast::error_code ec)
+void session::onHandshake(beast::error_code ec)
 {
     if(ec){
         return fail(ec, "handshake");
@@ -117,10 +117,10 @@ void session::on_handshake(beast::error_code ec)
     beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(40));
 
     // Send the HTTP request to the remote host
-    http::async_write(stream_, req_, beast::bind_front_handler(&session::on_write, shared_from_this()));
+    http::async_write(stream_, req_, beast::bind_front_handler(&session::onWrite, shared_from_this()));
 }
 
-void session::on_write(beast::error_code ec, std::size_t bytes_transferred)
+void session::onWrite(beast::error_code ec, std::size_t bytes_transferred)
 {
     boost::ignore_unused(bytes_transferred);
 
@@ -128,10 +128,10 @@ void session::on_write(beast::error_code ec, std::size_t bytes_transferred)
         return fail(ec, "write");
     }
     // Receive the HTTP response
-    http::async_read(stream_, buffer_, res_, beast::bind_front_handler(&session::on_read, shared_from_this()));
+    http::async_read(stream_, buffer_, res_, beast::bind_front_handler(&session::onRead, shared_from_this()));
 }
 
-void session::on_read(beast::error_code ec, std::size_t bytes_transferred)
+void session::onRead(beast::error_code ec, std::size_t bytes_transferred)
 {
     boost::ignore_unused(bytes_transferred);
 
@@ -145,10 +145,10 @@ void session::on_read(beast::error_code ec, std::size_t bytes_transferred)
     beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(40));
 
     // Gracefully close the stream
-    stream_.async_shutdown(beast::bind_front_handler(&session::on_shutdown, shared_from_this()));
+    stream_.async_shutdown(beast::bind_front_handler(&session::onShutdown, shared_from_this()));
 }
 
-void session::on_shutdown(beast::error_code ec)
+void session::onShutdown(beast::error_code ec)
 {
     if(ec != net::ssl::error::stream_truncated){
         return fail(ec, "shutdown");
