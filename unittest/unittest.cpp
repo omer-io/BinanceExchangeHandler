@@ -22,9 +22,11 @@ TEST(fetchDataFunctionTest, validResponse) {
     io.run();
 
     // check if symbols > 0
-    EXPECT_GT(binanceExchange.spotSymbols.size(), 0);
+    EXPECT_GT(binanceExchange.getSpotSymbolsSize(), 0);
+
     // check if symbol BTCUSDT has quote asset USDT
-    EXPECT_EQ(binanceExchange.spotSymbols["BTCUSDT"].quoteAsset, "USDT");
+    std::string symbolName = "BTCUSDT";
+    EXPECT_EQ(binanceExchange.getSpotSymbol(symbolName).quoteAsset, "USDT");
 }
 
 // Test for update operation in query function
@@ -33,23 +35,23 @@ TEST(queryFunctionTest, updateRequest) {
 
     // Add a symbol
     symbolInfo testSymbol;
-    testSymbol.symbol = "ETHUSDT";
+    testSymbol.symbol = "BTCUSDT";
     testSymbol.quoteAsset = "USDT";
     testSymbol.status = "TRADING";
     testSymbol.tickSize = "0.01";
     testSymbol.stepSize = "0.001";
 
-    binanceExchange.spotSymbols[testSymbol.symbol] = testSymbol;
+    binanceExchange.setSpotSymbol(testSymbol.symbol, testSymbol);
 
     // Update status
     std::string market = "SPOT";
-    std::string symbol = "ETHUSDT";
+    std::string symbol = "BTCUSDT";
     std::string queryType = "UPDATE";
     std::string queryStatus = "PENDING";
 
     query(binanceExchange, market, symbol, queryType, queryStatus);
 
-    EXPECT_EQ(binanceExchange.spotSymbols[symbol].status, "PENDING");
+    EXPECT_EQ(binanceExchange.getSpotSymbol(symbol).status, "PENDING");
 }
 
 TEST(queryFunctionTest, deleteRequest) {
@@ -70,13 +72,12 @@ TEST(queryFunctionTest, deleteRequest) {
 
     // Update status
     std::string market = "SPOT";
-    std::string symbol = "ETHUSDT";
+    std::string symbol = "BTCUSDT";
     std::string queryType = "DELETE";
     std::string queryStatus = "";
 
     query(binanceExchange, market, symbol, queryType, queryStatus);
-
-    EXPECT_NE(binanceExchange.spotSymbols[symbol].symbol, "ETHUSDT");
+    EXPECT_EQ(binanceExchange.spotSymbolexists(symbol), false);
 }
 
 int main() {
