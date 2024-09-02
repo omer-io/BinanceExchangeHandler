@@ -3,13 +3,18 @@
 #include "example/common/root_certificates.hpp"
 #include <boost/asio/ssl.hpp>
 
+exchangeInfo binanceExchange;
+urlInfo urlConfig;
+logsInfo logsConfig;
 
-// Dummy data for benchmarking
-std::string dummyBaseUrl = "api.binance.com";
-std::string dummyEndpoint = "/api/v3/exchangeInfo";
-exchangeInfo dummyExchange;
+// base URL and endpoint for testing
+std::string baseUrl, endpoint;
 
-
+void initializeConfig() {
+    readConfig("config.json", urlConfig, logsConfig);
+    baseUrl = urlConfig.spotExchangeBaseUrl;
+    endpoint = urlConfig.spotExchangeEndpoint;
+}
 
 // Benchmark for the fetchData function
 static void BMFetchData(benchmark::State& state) {
@@ -18,7 +23,7 @@ static void BMFetchData(benchmark::State& state) {
     load_root_certificates(ctx);
     ctx.set_verify_mode(ssl::verify_peer);
     for (auto _ : state) {
-        fetchData(dummyExchange, dummyBaseUrl, dummyEndpoint, io, ctx);
+        fetchData(binanceExchange, baseUrl, endpoint, urlConfig, io, ctx);
         io.run();
     }
 }
@@ -27,11 +32,16 @@ BENCHMARK(BMFetchData);
 // Benchmark for the query function
 static void BMQuery(benchmark::State& state) {
     setLogLevelForBM();
+    std::string market = "SPOT", symbol = "BTCUSDT", type = "GET", status = "";
     for (auto _ : state) {
-        query(dummyExchange, "SPOT", "BTCUSDT", "GET", "");
+        query(binanceExchange, market, symbol, type, status);
     }
 }
 BENCHMARK(BMQuery);
 
 // Main function to run benchmarks
-BENCHMARK_MAIN();
+int main() {
+    // Read configuration file
+    initializeConfig();
+    benchmark::RunSpecifiedBenchmarks();
+}

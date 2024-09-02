@@ -14,81 +14,24 @@
 #include "example/common/root_certificates.hpp"
 #include "boost/asio/ssl.hpp"
 
-// global variables to store base url and endpoints info
-std::string spotExchangeBaseUrl, usdFutureExchangeBaseUrl, coinFutureExchangeBaseUrl;
-std::string spotExchangeEndpoint, usdFutureEndpoint, coinFutureEndpoint;
-int requestInterval;
-
-// struct to store logging info from config.json
-struct logsInfo {
-    std::string level;
-    bool file;
-    bool console;
-} logsConfig;
-
-// instance of class excahngeInfo defined in exchangeInfoClass.h, stores data of all endpoints in respective map
-exchangeInfo binanceExchange;
-
-// read config.json for logging, request url, request interval
-void readConfig(std::string configFile) {
-
-    spdlog::info("Reading config file: {}", configFile);
-    // open config.json
-    FILE* fp = fopen(configFile.c_str(), "r"); 
-    
-    // throw error if file not opened
-    if (!fp) { 
-        spdlog::error("Error: unable to open file");
-    } 
-
-    rapidjson::Document doc;
-
-    char buffer[65536];
-    rapidjson::FileReadStream is(fp, buffer, sizeof(buffer));
-
-    // parse json data
-    doc.ParseStream(is);
-
-    // store base url of each endpoint
-    spotExchangeBaseUrl = doc["exchange_base_url"]["spot_exchange_info_base_uri"].GetString();
-    usdFutureExchangeBaseUrl = doc["exchange_base_url"]["usd_futures_exchange_info_base_uri"].GetString();
-    coinFutureExchangeBaseUrl = doc["exchange_base_url"]["coin_futures_exchange_info_base_uri"].GetString();
-
-    // store each endpoint
-    spotExchangeEndpoint = doc["exchange_endpoints"]["spot_exchange_info_uri"].GetString();
-    usdFutureEndpoint = doc["exchange_endpoints"]["usd_futures_exchange_info_uri"].GetString();
-    coinFutureEndpoint = doc["exchange_endpoints"]["coin_futures_exchange_info_uri"].GetString();
-    requestInterval = doc["request_interval"].GetInt();
-    
-    // store logging level, file enable, console enable
-    logsConfig.level = doc["logging"]["level"].GetString();
-    logsConfig.file = doc["logging"]["file"].GetBool();
-    logsConfig.console = doc["logging"]["console"].GetBool();
-
-    // close file
-    fclose(fp); 
-
-    spdlog::info("Config file loaded successfully");
-}
-
 // Function to fetch data of all 3 endpoints
-void fetchAll(const boost::system::error_code& /*e*/, boost::asio::steady_timer* t, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx){
+void fetchAll(exchangeInfo& binanceExchange, urlInfo& urlConfig, const boost::system::error_code& /*e*/, boost::asio::steady_timer* t, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx){
     
     spdlog::info("Fetching all data");  
 
     // Create fetch data func to fetch data from each endpoint  
-    fetchData(binanceExchange, spotExchangeBaseUrl, spotExchangeEndpoint, ioc, ctx);
-    fetchData(binanceExchange, usdFutureExchangeBaseUrl, usdFutureEndpoint, ioc, ctx);
-    fetchData(binanceExchange, coinFutureExchangeBaseUrl, coinFutureEndpoint, ioc, ctx);
+    fetchData(binanceExchange, urlConfig.spotExchangeBaseUrl, urlConfig.spotExchangeEndpoint, urlConfig, ioc, ctx);
+    fetchData(binanceExchange, urlConfig.usdFutureExchangeBaseUrl, urlConfig.usdFutureEndpoint, urlConfig, ioc, ctx);
+    fetchData(binanceExchange, urlConfig.coinFutureExchangeBaseUrl, urlConfig.coinFutureEndpoint, urlConfig, ioc, ctx);
 
     // Set the timer to expire in 60 seconds and wait for next fetch
-    t->expires_at(t->expiry() + boost::asio::chrono::seconds(requestInterval));
-    t->async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, t, std::ref(ioc), std::ref(ctx)));
+    t->expires_at(t->expiry() + boost::asio::chrono::seconds(urlConfig.requestInterval));
+    t->async_wait(boost::bind(fetchAll, std::ref(binanceExchange), std::ref(urlConfig), boost::asio::placeholders::error, t, std::ref(ioc), std::ref(ctx)));
 
     spdlog::info("Fetch all data completed");    
 }
 
-void setSpdLogs(){
+void setSpdLogs(logsInfo& logsConfig){
 
     // Create a vector of sinks
     std::vector<spdlog::sink_ptr> sinks;
@@ -122,24 +65,29 @@ void setSpdLogs(){
 
 int main() {
 
+    urlInfo urlConfig;
+    logsInfo logsConfig;
     // read configuration file
-    readConfig("config.json");
+    readConfig("config.json", urlConfig, logsConfig);
     
     // set up logging system
-    setSpdLogs();
+    setSpdLogs(logsConfig);
 
     spdlog::info("Logging Level: {}", logsConfig.level);
     spdlog::info("Logging to File: {}", logsConfig.file ? "Enabled" : "Disabled");
     spdlog::info("Logging to Console: {}", logsConfig.console ? "Enabled" : "Disabled");
 
 
-    spdlog::info("Spot Exchange Info base URI: {}", spotExchangeBaseUrl);
-    spdlog::info("USD Futures Exchange Info base URI: {}", usdFutureExchangeBaseUrl);
-    spdlog::info("Coin Futures Exchange Info base URI: {}", coinFutureExchangeBaseUrl);
-    spdlog::info("Spot Exchange Info URI: {}", spotExchangeEndpoint);
-    spdlog::info("USD Futures Exchange Info URI: {}", usdFutureEndpoint);
-    spdlog::info("Coin Futures Exchange Info URI: {}", coinFutureEndpoint);
-    spdlog::info("Request Interval: {} seconds", requestInterval);
+    spdlog::info("Spot Exchange Info base URI: {}", urlConfig.spotExchangeBaseUrl);
+    spdlog::info("USD Futures Exchange Info base URI: {}", urlConfig.usdFutureExchangeBaseUrl);
+    spdlog::info("Coin Futures Exchange Info base URI: {}", urlConfig.coinFutureExchangeBaseUrl);
+    spdlog::info("Spot Exchange Info URI: {}", urlConfig.spotExchangeEndpoint);
+    spdlog::info("USD Futures Exchange Info URI: {}", urlConfig.usdFutureEndpoint);
+    spdlog::info("Coin Futures Exchange Info URI: {}", urlConfig.coinFutureEndpoint);
+    spdlog::info("Request Interval: {} seconds", urlConfig.requestInterval);
+
+    // instance of class excahngeInfo defined in exchangeInfoClass.h, stores data of all endpoints in respective map
+    exchangeInfo binanceExchange;
 
     // thread to run the readQuery function
     std::thread readQueryThread(readQuery, std::ref(binanceExchange));
@@ -157,10 +105,10 @@ int main() {
     ctx.set_verify_mode(ssl::verify_peer);
 
     // timer to fetch data every 60 sec
-    boost::asio::steady_timer t(io, boost::asio::chrono::seconds(requestInterval));
+    boost::asio::steady_timer t(io, boost::asio::chrono::seconds(urlConfig.requestInterval));
 
     // call back fetchAll function when timer expires
-    t.async_wait(boost::bind(fetchAll, boost::asio::placeholders::error, &t, std::ref(io), std::ref(ctx)));
+    t.async_wait(boost::bind(fetchAll, std::ref(binanceExchange), std::ref(urlConfig), boost::asio::placeholders::error, &t, std::ref(io), std::ref(ctx)));
 
     // Run IO context
     io.run();

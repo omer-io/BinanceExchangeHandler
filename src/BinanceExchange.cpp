@@ -18,8 +18,50 @@
 // mutex to protect access to shared maps
 std::mutex binanceExchangeMutex;
 
+// read config.json for logging, request url, request interval
+void readConfig(std::string configFile, urlInfo& urlConfig, logsInfo& logsConfig) {
+
+    spdlog::info("Reading config file: {}", configFile);
+    // open config.json
+    FILE* fp = fopen(configFile.c_str(), "r"); 
+    
+    // throw error if file not opened
+    if (!fp) { 
+        spdlog::error("Error: unable to open file");
+    } 
+
+    rapidjson::Document doc;
+
+    char buffer[65536];
+    rapidjson::FileReadStream is(fp, buffer, sizeof(buffer));
+
+    // parse json data
+    doc.ParseStream(is);
+
+    // store base url of each endpoint
+    urlConfig.spotExchangeBaseUrl = doc["exchange_base_url"]["spot_exchange_info_base_uri"].GetString();
+    urlConfig.usdFutureExchangeBaseUrl = doc["exchange_base_url"]["usd_futures_exchange_info_base_uri"].GetString();
+    urlConfig.coinFutureExchangeBaseUrl = doc["exchange_base_url"]["coin_futures_exchange_info_base_uri"].GetString();
+
+    // store each endpoint
+    urlConfig.spotExchangeEndpoint = doc["exchange_endpoints"]["spot_exchange_info_uri"].GetString();
+    urlConfig.usdFutureEndpoint = doc["exchange_endpoints"]["usd_futures_exchange_info_uri"].GetString();
+    urlConfig.coinFutureEndpoint = doc["exchange_endpoints"]["coin_futures_exchange_info_uri"].GetString();
+    urlConfig.requestInterval = doc["request_interval"].GetInt();
+    
+    // store logging level, file enable, console enable
+    logsConfig.level = doc["logging"]["level"].GetString();
+    logsConfig.file = doc["logging"]["file"].GetBool();
+    logsConfig.console = doc["logging"]["console"].GetBool();
+
+    // close file
+    fclose(fp); 
+
+    spdlog::info("Config file loaded successfully");
+}
+
 // function to make HTTP request and get data
-void fetchData(exchangeInfo& binanceExchange, std::string baseUrl, std::string endpoint, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx) {
+void fetchData(exchangeInfo& binanceExchange, std::string& baseUrl, std::string& endpoint, urlInfo& urlConfig, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx) {
 
     auto const host = baseUrl.c_str();
     auto const port = "443";
@@ -30,16 +72,13 @@ void fetchData(exchangeInfo& binanceExchange, std::string baseUrl, std::string e
     // Launch the asynchronous operation
     // The session is constructed with a strand to
     // ensure that handlers do not execute concurrently.
-    std::make_shared<session>(
-        boost::asio::make_strand(ioc),
-        ctx, binanceExchange, baseUrl
-        )->run(host, port, target, version);
+    std::make_shared<session>(boost::asio::make_strand(ioc), ctx, binanceExchange, baseUrl, urlConfig)->run(host, port, target, version);
 
 }
 
 
 // function to perform queries
-void query(exchangeInfo& binanceExchange, std::string queryMarket, std::string querySymbol, std::string queryType, std::string queryStatus){
+void query(exchangeInfo& binanceExchange, std::string& queryMarket, std::string& querySymbol, std::string& queryType, std::string& queryStatus){
 
     spdlog::info("Processing query: Market = {}, Symbol = {}, Type = {}", queryMarket, querySymbol, queryType);
 

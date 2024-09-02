@@ -2,6 +2,20 @@
 #include <string>
 #include <boost/asio/ssl.hpp>
 
+// struct to store base url and endpoints info
+struct urlInfo{
+    std::string spotExchangeBaseUrl, usdFutureExchangeBaseUrl, coinFutureExchangeBaseUrl;
+    std::string spotExchangeEndpoint, usdFutureEndpoint, coinFutureEndpoint;
+    int requestInterval;
+};
+
+// struct to store logging info from config.json
+struct logsInfo {
+    std::string level;
+    bool file;
+    bool console;
+}; 
+
 // struct symbolInfo to store required data of symbols
 struct symbolInfo{
     std::string symbol, quoteAsset, status, tickSize, stepSize;
@@ -114,8 +128,9 @@ public:
     }
 };
 
-// functions declared here are defined in src/getApiData.cpp
-void fetchData(exchangeInfo&, std::string, std::string, boost::asio::io_context&, boost::asio::ssl::context&);
+// functions declared here are defined in src/BinanceExchange.cpp
+void readConfig(std::string, urlInfo&, logsInfo&);
+void fetchData(exchangeInfo&, std::string&, std::string&, urlInfo&, boost::asio::io_context&, boost::asio::ssl::context&);
 void readQuery(exchangeInfo&);
-void query(exchangeInfo&, std::string, std::string, std::string, std::string);
+void query(exchangeInfo&, std::string&, std::string&, std::string&, std::string&);
 void setLogLevelForBM();

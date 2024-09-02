@@ -14,13 +14,6 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/basic_file_sink.h"
 
-void processResponse(boost::beast::http::response<boost::beast::http::string_body>&, exchangeInfo*, std::string);
-
-// Report a failure
-void fail(boost::beast::error_code, char const*);
-
-// boost::beast::http::response<boost::beast::http::string_body> result;
-
 // Performs an HTTP GET and prints the response
 class session : public std::enable_shared_from_this<session>
 {
@@ -30,6 +23,9 @@ class session : public std::enable_shared_from_this<session>
     boost::beast::flat_buffer buffer_; // (Must persist between reads)
     boost::beast::http::request<boost::beast::http::empty_body> req_;
     boost::beast::http::response<boost::beast::http::string_body> res_;
+    exchangeInfo* binanceExchangeInfo; 
+    std::string baseUrl;
+    urlInfo baseUrls;
 
     void onResolve(boost::beast::error_code, boost::asio::ip::tcp::resolver::results_type);
 
@@ -40,14 +36,16 @@ class session : public std::enable_shared_from_this<session>
     void onWrite(boost::beast::error_code, std::size_t);
 
     void onRead(boost::beast::error_code, std::size_t);
+    
+    void processResponse(boost::beast::http::response<boost::beast::http::string_body>&, exchangeInfo*, std::string, urlInfo&);
 
     void onShutdown(boost::beast::error_code);
 
-public:
-    exchangeInfo* binanceExchangeInfo; 
-    std::string baseUrl;
+    // Report a failure
+    void fail(boost::beast::error_code, char const*);
 
-    session(boost::asio::any_io_executor, boost::asio::ssl::context&, exchangeInfo&, std::string);
+public:
+    session(boost::asio::any_io_executor, boost::asio::ssl::context&, exchangeInfo&, std::string, urlInfo&);
 
     // Start the asynchronous operation
     void run(char const*, char const*, char const*, int);
