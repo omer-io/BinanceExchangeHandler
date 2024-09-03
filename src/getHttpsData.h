@@ -1,3 +1,6 @@
+#ifndef getHttpsData
+#define getHttpsData
+
 #include <cstdlib>
 #include <iostream>
 #include <memory>
@@ -52,3 +55,4 @@ public:
 
 };
 
+#endif // getHttpsData
