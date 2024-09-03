@@ -90,7 +90,7 @@ public:
 
     void setSpdLogs(logsInfo&);
 
-    void fetchData(exchangeInfo&, std::string&, std::string&, urlInfo&, boost::asio::io_context&, boost::asio::ssl::context&);
+    void fetchData(std::string&, std::string&, urlInfo&, boost::asio::io_context&, boost::asio::ssl::context&);
 
     void readQuery();
 

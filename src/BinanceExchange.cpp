@@ -190,7 +190,7 @@ void exchangeInfo::setSpdLogs(logsInfo& logsConfig){
 }
 
 // function to make HTTP request and get data
-void exchangeInfo::fetchData(exchangeInfo& binanceExchange, std::string& baseUrl, std::string& endpoint, urlInfo& urlConfig, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx) {
+void exchangeInfo::fetchData(std::string& baseUrl, std::string& endpoint, urlInfo& urlConfig, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx) {
 
     auto const host = baseUrl.c_str();
     auto const port = "443";
@@ -199,12 +199,10 @@ void exchangeInfo::fetchData(exchangeInfo& binanceExchange, std::string& baseUrl
 
     spdlog::info("Starting async HTTP request to host: {}, endpoint: {}", host, target);
     // Launch the asynchronous operation
-    // The session is constructed with a strand to
-    // ensure that handlers do not execute concurrently.
-    std::make_shared<session>(boost::asio::make_strand(ioc), ctx, binanceExchange, baseUrl, urlConfig)->run(host, port, target, version);
+    // The session is constructed with a strand to ensure that handlers do not execute concurrently.
+    std::make_shared<session>(boost::asio::make_strand(ioc), ctx, this, urlConfig)->get(host, port, target, version);
 
 }
-
 
 // function to perform queries
 void exchangeInfo::query(std::string& queryMarket, std::string& querySymbol, std::string& queryType, std::string& queryStatus){
@@ -268,10 +266,9 @@ void exchangeInfo::query(std::string& queryMarket, std::string& querySymbol, std
         spdlog::info("Updating data for symbol: {}", querySymbol);
 
         if(queryMarket == "SPOT"){
-            spdlog::info("Old Status: {}", temp.status);
+            spdlog::info("Old Status: {}", getSpotSymbol(querySymbol).status);
             updateSpotStatus(querySymbol, queryStatus);
-            temp = getSpotSymbol(querySymbol);
-            spdlog::info("New Status: {}", temp.status);
+            spdlog::info("New Status: {}", getSpotSymbol(querySymbol).status);
 
             rapidjson::Value updateDetails(rapidjson::kObjectType);
             updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
@@ -280,10 +277,9 @@ void exchangeInfo::query(std::string& queryMarket, std::string& querySymbol, std
         }
 
         if(queryMarket == "usd_futures"){
-            spdlog::info("Old Status: {}", temp.status);
+            spdlog::info("Old Status: {}", getUsdSymbol(querySymbol).status);
             updateUsdStatus(querySymbol, queryStatus);
-            temp = getUsdSymbol(querySymbol);
-            spdlog::info("New Status: {}", temp.status);
+            spdlog::info("New Status: {}", getUsdSymbol(querySymbol).status);
 
             rapidjson::Value updateDetails(rapidjson::kObjectType);
             updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
@@ -292,10 +288,9 @@ void exchangeInfo::query(std::string& queryMarket, std::string& querySymbol, std
         }
 
         if(queryMarket == "coin_futures"){
-            spdlog::info("Old Status: {}", temp.status);
+            spdlog::info("Old Status: {}", getCoinSymbol(querySymbol).status);
             updateCoinStatus(querySymbol, queryStatus);
-            temp = getCoinSymbol(querySymbol);
-            spdlog::info("New Status: {}", temp.status);
+            spdlog::info("New Status: {}", getCoinSymbol(querySymbol).status);
 
             rapidjson::Value updateDetails(rapidjson::kObjectType);
             updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);

@@ -48,10 +48,10 @@ class session : public std::enable_shared_from_this<session>
     void fail(boost::beast::error_code, char const*);
 
 public:
-    session(boost::asio::any_io_executor, boost::asio::ssl::context&, exchangeInfo&, std::string, urlInfo&);
+    session(boost::asio::any_io_executor, boost::asio::ssl::context&, exchangeInfo*, urlInfo&);
 
     // Start the asynchronous operation
-    void run(char const*, char const*, char const*, int);
+    void get(char const*, char const*, char const*, int);
 
 };
 
