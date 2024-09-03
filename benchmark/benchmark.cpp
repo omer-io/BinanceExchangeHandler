@@ -14,6 +14,7 @@ void initializeConfig() {
     readConfig("config.json", urlConfig, logsConfig);
     baseUrl = urlConfig.spotExchangeBaseUrl;
     endpoint = urlConfig.spotExchangeEndpoint;
+    setSpdLogs(logsConfig);
 }
 
 // Benchmark for the fetchData function
@@ -31,7 +32,6 @@ BENCHMARK(BMFetchData);
 
 // Benchmark for the query function
 static void BMQuery(benchmark::State& state) {
-    setLogLevelForBM();
     std::string market = "SPOT", symbol = "BTCUSDT", type = "GET", status = "";
     for (auto _ : state) {
         query(binanceExchange, market, symbol, type, status);

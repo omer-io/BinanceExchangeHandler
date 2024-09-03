@@ -130,7 +130,7 @@ public:
 
 // functions declared here are defined in src/BinanceExchange.cpp
 void readConfig(std::string, urlInfo&, logsInfo&);
+void setSpdLogs(logsInfo&);
 void fetchData(exchangeInfo&, std::string&, std::string&, urlInfo&, boost::asio::io_context&, boost::asio::ssl::context&);
 void readQuery(exchangeInfo&);
 void query(exchangeInfo&, std::string&, std::string&, std::string&, std::string&);
-void setLogLevelForBM();

@@ -60,6 +60,37 @@ void readConfig(std::string configFile, urlInfo& urlConfig, logsInfo& logsConfig
     spdlog::info("Config file loaded successfully");
 }
 
+void setSpdLogs(logsInfo& logsConfig){
+
+    // Create a vector of sinks
+    std::vector<spdlog::sink_ptr> sinks;
+
+    // Add console sink if enabled
+    if (logsConfig.console) {
+        sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+        spdlog::info("Console logging enabled");
+    }
+
+    // Add file sink if enabled
+    if (logsConfig.file) {
+        sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/logfile.log", true));
+        spdlog::info("File logging enabled");
+    }
+
+    // Create logger
+    auto logger = std::make_shared<spdlog::logger>("BinanceExchangeLogs", begin(sinks), end(sinks));
+
+    // set level
+    logger->set_level(spdlog::level::from_str(logsConfig.level));
+    
+    // register logger
+    spdlog::register_logger(logger);
+    spdlog::set_default_logger(logger);
+    logger->flush_on(spdlog::level::from_str(logsConfig.level));
+
+    spdlog::info("Logger setup completed");
+}
+
 // function to make HTTP request and get data
 void fetchData(exchangeInfo& binanceExchange, std::string& baseUrl, std::string& endpoint, urlInfo& urlConfig, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx) {
 
