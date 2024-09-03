@@ -20,9 +20,9 @@ void fetchAll(exchangeInfo& binanceExchange, urlInfo& urlConfig, const boost::sy
     spdlog::info("Fetching all data");  
 
     // Create fetch data func to fetch data from each endpoint  
-    fetchData(binanceExchange, urlConfig.spotExchangeBaseUrl, urlConfig.spotExchangeEndpoint, urlConfig, ioc, ctx);
-    fetchData(binanceExchange, urlConfig.usdFutureExchangeBaseUrl, urlConfig.usdFutureEndpoint, urlConfig, ioc, ctx);
-    fetchData(binanceExchange, urlConfig.coinFutureExchangeBaseUrl, urlConfig.coinFutureEndpoint, urlConfig, ioc, ctx);
+    binanceExchange.fetchData(binanceExchange, urlConfig.spotExchangeBaseUrl, urlConfig.spotExchangeEndpoint, urlConfig, ioc, ctx);
+    binanceExchange.fetchData(binanceExchange, urlConfig.usdFutureExchangeBaseUrl, urlConfig.usdFutureEndpoint, urlConfig, ioc, ctx);
+    binanceExchange.fetchData(binanceExchange, urlConfig.coinFutureExchangeBaseUrl, urlConfig.coinFutureEndpoint, urlConfig, ioc, ctx);
 
     // Set the timer to expire in 60 seconds and wait for next fetch
     t->expires_at(t->expiry() + boost::asio::chrono::seconds(urlConfig.requestInterval));
@@ -33,13 +33,17 @@ void fetchAll(exchangeInfo& binanceExchange, urlInfo& urlConfig, const boost::sy
 
 int main() {
 
+    // instance of class excahngeInfo defined in exchangeInfoClass.h, stores data of all endpoints in respective map
+    exchangeInfo binanceExchange;
+
     urlInfo urlConfig;
     logsInfo logsConfig;
+
     // read configuration file
-    readConfig("config.json", urlConfig, logsConfig);
+    binanceExchange.readConfig("config.json", urlConfig, logsConfig);
     
     // set up logging system
-    setSpdLogs(logsConfig);
+    binanceExchange.setSpdLogs(logsConfig);
 
     spdlog::info("Logging Level: {}", logsConfig.level);
     spdlog::info("Logging to File: {}", logsConfig.file ? "Enabled" : "Disabled");
@@ -54,11 +58,8 @@ int main() {
     spdlog::info("Coin Futures Exchange Info URI: {}", urlConfig.coinFutureEndpoint);
     spdlog::info("Request Interval: {} seconds", urlConfig.requestInterval);
 
-    // instance of class excahngeInfo defined in exchangeInfoClass.h, stores data of all endpoints in respective map
-    exchangeInfo binanceExchange;
-
     // thread to run the readQuery function
-    std::thread readQueryThread(readQuery, std::ref(binanceExchange));
+    std::thread readQueryThread(&exchangeInfo::readQuery, &binanceExchange);
 
     // The io_context is required for all I/O
     boost::asio::io_context io;

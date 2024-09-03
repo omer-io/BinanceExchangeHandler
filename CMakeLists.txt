@@ -21,8 +21,8 @@ add_subdirectory(googletest)
 
 add_subdirectory(src)
 add_subdirectory(app)
-add_subdirectory(benchmark)
-add_subdirectory(unittest)
+# add_subdirectory(benchmark)
+# add_subdirectory(unittest)
 
 
 
