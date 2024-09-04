@@ -15,7 +15,7 @@ find_package(boost)
 
 link_libraries(${OPENSSL_LIBRARIES})
 
-include_directories(include)
+# include_directories(include)
 
 add_subdirectory(googletest)
 

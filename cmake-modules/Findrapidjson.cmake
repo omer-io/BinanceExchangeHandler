@@ -9,4 +9,4 @@ ExternalProject_Add(rapidjson
 )
 
 ExternalProject_Get_Property(rapidjson source_dir)
-include_directories(${source_dir}/include)
+set(RAPIDJSON_INCLUDE_DIR ${source_dir}/include)

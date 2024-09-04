@@ -86,14 +86,11 @@ public:
     // check if coin symbol exists
     bool coinSymbolexists(std::string&);
 
+    // configurations functions
     void readConfig(std::string, urlInfo&, logsInfo&);
-
     void setSpdLogs(logsInfo&);
-
     void fetchData(std::string&, std::string&, urlInfo&, boost::asio::io_context&, boost::asio::ssl::context&);
-
     void readQuery();
-
     void query(std::string&, std::string&, std::string&, std::string&);
 };
 
