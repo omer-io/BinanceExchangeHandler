@@ -186,17 +186,28 @@ void exchangeInfo::setSpdLogs(logsInfo& logsConfig){
 }
 
 // function to make HTTP request and get data
-void exchangeInfo::fetchData(std::string& baseUrl, std::string& endpoint, urlInfo& urlConfig, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx) {
+void exchangeInfo::fetchData(urlInfo& urlConfig, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx) {
 
-    auto const host = baseUrl.c_str();
     auto const port = "443";
-    auto const target = endpoint.c_str();
     int version = 11;
 
-    spdlog::info("Starting async HTTP request to host: {}, endpoint: {}", host, target);
     // Launch the asynchronous operation
     // The session is constructed with a strand to ensure that handlers do not execute concurrently.
-    std::make_shared<session>(boost::asio::make_strand(ioc), ctx, this, urlConfig)->get(host, port, target, version);
+
+    // creating session for spot endpoint
+    spdlog::info("Starting async HTTP request to host: {}, endpoint: {}", urlConfig.spotExchangeBaseUrl, urlConfig.spotExchangeEndpoint);
+    auto spotSession = std::make_shared<session>(boost::asio::make_strand(ioc), ctx, this, urlConfig);
+    spotSession->get(urlConfig.spotExchangeBaseUrl.c_str(), port, urlConfig.spotExchangeEndpoint.c_str(), version);
+
+    // creating session for usd futures endpoint
+    spdlog::info("Starting async HTTP request to host: {}, endpoint: {}", urlConfig.usdFutureExchangeBaseUrl, urlConfig.usdFutureEndpoint);
+    auto usdFuturesSession = std::make_shared<session>(boost::asio::make_strand(ioc), ctx, this, urlConfig);
+    usdFuturesSession->get(urlConfig.usdFutureExchangeBaseUrl.c_str(), port, urlConfig.usdFutureEndpoint.c_str(), version);
+
+    // creating session for coin futures endpoint
+    spdlog::info("Starting async HTTP request to host: {}, endpoint: {}", urlConfig.coinFutureExchangeBaseUrl, urlConfig.coinFutureEndpoint);
+    auto coinFuturesSession = std::make_shared<session>(boost::asio::make_strand(ioc), ctx, this, urlConfig);
+    coinFuturesSession->get(urlConfig.coinFutureExchangeBaseUrl.c_str(), port, urlConfig.coinFutureEndpoint.c_str(), version);
 
 }
 

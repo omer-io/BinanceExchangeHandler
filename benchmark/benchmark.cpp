@@ -7,13 +7,8 @@ exchangeInfo binanceExchange;
 urlInfo urlConfig;
 logsInfo logsConfig;
 
-// base URL and endpoint for testing
-std::string baseUrl, endpoint;
-
 void initializeConfig() {
     binanceExchange.readConfig("config.json", urlConfig, logsConfig);
-    baseUrl = urlConfig.spotExchangeBaseUrl;
-    endpoint = urlConfig.spotExchangeEndpoint;
     binanceExchange.setSpdLogs(logsConfig);
 }
 
@@ -24,7 +19,7 @@ static void BMFetchData(benchmark::State& state) {
     load_root_certificates(ctx);
     ctx.set_verify_mode(ssl::verify_peer);
     for (auto _ : state) {
-        binanceExchange.fetchData(baseUrl, endpoint, urlConfig, io, ctx);
+        binanceExchange.fetchData(urlConfig, io, ctx);
         io.run();
     }
 }

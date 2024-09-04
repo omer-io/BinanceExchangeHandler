@@ -12,10 +12,6 @@ TEST(fetchDataFunctionTest, validResponse) {
 
     // read configuration file
     binanceExchange.readConfig("config.json", urlConfig, logsConfig);
-    
-    // base URL and endpoint for testing
-    std::string baseUrl = urlConfig.spotExchangeBaseUrl;
-    std::string endpoint = urlConfig.spotExchangeEndpoint;
 
     boost::asio::io_context io;
     boost::asio::ssl::context ctx{ssl::context::tlsv12_client};
@@ -23,7 +19,7 @@ TEST(fetchDataFunctionTest, validResponse) {
     ctx.set_verify_mode(ssl::verify_peer);
 
     // Call fetchData 
-    binanceExchange.fetchData(baseUrl, endpoint, urlConfig, io, ctx);
+    binanceExchange.fetchData(urlConfig, io, ctx);
     io.run();
 
     // check if symbols > 0
@@ -66,10 +62,6 @@ TEST(queryFunctionTest, deleteRequest) {
 
     // read configuration file
     binanceExchange.readConfig("config.json", urlConfig, logsConfig);
-    
-    // base URL and endpoint for testing
-    std::string baseUrl = urlConfig.spotExchangeBaseUrl;
-    std::string endpoint = urlConfig.spotExchangeEndpoint;
 
     boost::asio::io_context io;
     boost::asio::ssl::context ctx{ssl::context::tlsv12_client};
@@ -77,7 +69,7 @@ TEST(queryFunctionTest, deleteRequest) {
     ctx.set_verify_mode(ssl::verify_peer);
 
     // Call fetchData 
-    binanceExchange.fetchData(baseUrl, endpoint, urlConfig, io, ctx);
+    binanceExchange.fetchData(urlConfig, io, ctx);
     io.run();
 
     // Update status

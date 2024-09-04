@@ -12,10 +12,8 @@ void fetchAll(exchangeInfo& binanceExchange, urlInfo& urlConfig, const boost::sy
     
     spdlog::info("Fetching all data");  
 
-    // Create fetch data func to fetch data from each endpoint  
-    binanceExchange.fetchData(urlConfig.spotExchangeBaseUrl, urlConfig.spotExchangeEndpoint, urlConfig, ioc, ctx);
-    binanceExchange.fetchData(urlConfig.usdFutureExchangeBaseUrl, urlConfig.usdFutureEndpoint, urlConfig, ioc, ctx);
-    binanceExchange.fetchData(urlConfig.coinFutureExchangeBaseUrl, urlConfig.coinFutureEndpoint, urlConfig, ioc, ctx);
+    // Call fetch data func to fetch data from each endpoint  
+    binanceExchange.fetchData(urlConfig, ioc, ctx);
 
     // Set the timer to expire in 60 seconds and wait for next fetch
     t->expires_at(t->expiry() + boost::asio::chrono::seconds(urlConfig.requestInterval));
