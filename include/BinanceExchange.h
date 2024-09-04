@@ -33,109 +33,68 @@ private:
 
 public:
     // Getter for spotSymbols
-    symbolInfo getSpotSymbol( std::string& key) {
-        auto it = spotSymbols.find(key);
-            return it->second;
-    }
+    symbolInfo getSpotSymbol(std::string&);
 
     // Setter for spotSymbols
-    void setSpotSymbol(std::string& key, symbolInfo& value) {
-        spotSymbols[key] = value;
-    }
+    void setSpotSymbol(std::string&, symbolInfo&);
 
     // Getter for usdSymbols
-    symbolInfo getUsdSymbol(std::string& key){
-        auto it = usdSymbols.find(key);
-            return it->second;
-    }
+    symbolInfo getUsdSymbol(std::string&);
 
     // Setter for usdSymbols
-    void setUsdSymbol(std::string& key, symbolInfo& value){
-        usdSymbols[key] = value;
-    }
+    void setUsdSymbol(std::string&, symbolInfo&);
 
     // Getter for coinSymbols
-    symbolInfo getCoinSymbol(std::string& key) {
-        auto it = coinSymbols.find(key);
-            return it->second;
-    }
+    symbolInfo getCoinSymbol(std::string&);
 
     // Setter for coinSymbols
-    void setCoinSymbol( std::string& key, symbolInfo& value) {
-        coinSymbols[key] = value;
-    }
+    void setCoinSymbol( std::string&, symbolInfo&); 
 
     // Function to get the size of spotSymbols
-    size_t getSpotSymbolsSize(){
-        return spotSymbols.size();
-    }
+    size_t getSpotSymbolsSize();
 
     // Function to get the size of usdSymbols
-    size_t getUsdSymbolsSize(){
-        return usdSymbols.size();
-    }
+    size_t getUsdSymbolsSize();
 
     // Function to get the size of coinSymbols
-    size_t getCoinSymbolsSize(){
-        return coinSymbols.size();
-    }
+    size_t getCoinSymbolsSize();
 
-    void updateSpotStatus(std::string key, std::string newStatus){
-        spotSymbols[key].status = newStatus;
-    }
-    void updateUsdStatus(std::string key, std::string newStatus){
-        usdSymbols[key].status = newStatus;
-    }
-    void updateCoinStatus(std::string key, std::string newStatus){
-        coinSymbols[key].status = newStatus;
-    }
+    // Func to update status of spotSymbols
+    void updateSpotStatus(std::string&, std::string&);
+    
+    // Func to update status of usdSymbols
+    void updateUsdStatus(std::string&, std::string&);
 
-    void deleteSpotSymbol(std::string key){
-        auto it = spotSymbols.find(key);
-        spotSymbols.erase(it);
-    }
-    void deleteUsdSymbol(std::string key){
-        auto it = usdSymbols.find(key);
-        usdSymbols.erase(key);
-    }
-    void deleteCoinSymbol(std::string key){
-        auto it = coinSymbols.find(key);
-        coinSymbols.erase(key);
-    }
+    // Func to update status of coinSymbols
+    void updateCoinStatus(std::string&, std::string&);
 
-        // check if spot symbol exists
-    bool spotSymbolexists(std::string& key){
-        auto it = spotSymbols.find(key);
-        if (it != spotSymbols.end()) {
-            return true;
-        }
-        return false;
-    }
+    // Func to delete a spot symbol
+    void deleteSpotSymbol(std::string&);
+
+    // Func to delete a USD futures symbol
+    void deleteUsdSymbol(std::string&);
+
+    // Func to delete a coin futures symbol
+    void deleteCoinSymbol(std::string&);
+
+    // check if spot symbol exists
+    bool spotSymbolexists(std::string&);
 
     // check if usd symbol exists
-    bool usdSymbolexists(std::string& key){
-        auto it = usdSymbols.find(key);
-        if (it != usdSymbols.end()) {
-            return true;
-        }
-        return false;
-    }
+    bool usdSymbolexists(std::string&);
 
     // check if coin symbol exists
-    bool coinSymbolexists(std::string& key){
-        auto it = coinSymbols.find(key);
-        if (it != coinSymbols.end()) {
-            return true;
-        }
-        return false;
-    }
-};
+    bool coinSymbolexists(std::string&);
 
-// functions declared here are defined in src/BinanceExchange.cpp
-void readConfig(std::string, urlInfo&, logsInfo&);
-void setSpdLogs(logsInfo&);
-void fetchData(exchangeInfo&, std::string&, std::string&, urlInfo&, boost::asio::io_context&, boost::asio::ssl::context&);
-void readQuery(exchangeInfo&);
-void query(exchangeInfo&, std::string&, std::string&, std::string&, std::string&);
+    void readConfig(std::string, urlInfo&, logsInfo&);
+
+    void setSpdLogs(logsInfo&);
+
+    void fetchData(std::string&, std::string&, urlInfo&, boost::asio::io_context&, boost::asio::ssl::context&);
+
+    void readQuery();
+
+    void query(std::string&, std::string&, std::string&, std::string&);
+};
 
 #endif // BinanceExchange

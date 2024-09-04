@@ -1,7 +1,5 @@
 
 #include <vector>
-#include <map>
-#include <thread>
 #include <mutex>
 
 #include "getHttpsData.h"
@@ -9,8 +7,6 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
-#include "boost/asio.hpp"
-#include "boost/bind/bind.hpp"
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/basic_file_sink.h"
@@ -18,8 +14,106 @@
 // mutex to protect access to shared maps
 std::mutex binanceExchangeMutex;
 
+// Getter for spotSymbols
+symbolInfo exchangeInfo::getSpotSymbol( std::string& key) {
+    auto it = spotSymbols.find(key);
+        return it->second;
+}
+
+// Setter for spotSymbols
+void exchangeInfo::setSpotSymbol(std::string& key, symbolInfo& value) {
+    spotSymbols[key] = value;
+}
+
+// Getter for usdSymbols
+symbolInfo exchangeInfo::getUsdSymbol(std::string& key){
+    auto it = usdSymbols.find(key);
+        return it->second;
+}
+
+// Setter for usdSymbols
+void exchangeInfo::setUsdSymbol(std::string& key, symbolInfo& value){
+    usdSymbols[key] = value;
+}
+
+// Getter for coinSymbols
+symbolInfo exchangeInfo::getCoinSymbol(std::string& key) {
+    auto it = coinSymbols.find(key);
+        return it->second;
+}
+
+// Setter for coinSymbols
+void exchangeInfo::setCoinSymbol( std::string& key, symbolInfo& value) {
+    coinSymbols[key] = value;
+}
+
+// Function to get the size of spotSymbols
+size_t exchangeInfo::getSpotSymbolsSize(){
+    return spotSymbols.size();
+}
+
+// Function to get the size of usdSymbols
+size_t exchangeInfo::getUsdSymbolsSize(){
+    return usdSymbols.size();
+}
+
+// Function to get the size of coinSymbols
+size_t exchangeInfo::getCoinSymbolsSize(){
+    return coinSymbols.size();
+}
+
+void exchangeInfo::updateSpotStatus(std::string& key, std::string& newStatus){
+    spotSymbols[key].status = newStatus;
+}
+void exchangeInfo::updateUsdStatus(std::string& key, std::string& newStatus){
+    usdSymbols[key].status = newStatus;
+}
+void exchangeInfo::updateCoinStatus(std::string& key, std::string& newStatus){
+    coinSymbols[key].status = newStatus;
+}
+
+void exchangeInfo::deleteSpotSymbol(std::string& key){
+    auto it = spotSymbols.find(key);
+    spotSymbols.erase(it);
+}
+void exchangeInfo::deleteUsdSymbol(std::string& key){
+    auto it = usdSymbols.find(key);
+    usdSymbols.erase(key);
+}
+void exchangeInfo::deleteCoinSymbol(std::string& key){
+    auto it = coinSymbols.find(key);
+    coinSymbols.erase(key);
+}
+
+    // check if spot symbol exists
+bool exchangeInfo::spotSymbolexists(std::string& key){
+    auto it = spotSymbols.find(key);
+    if (it != spotSymbols.end()) {
+        return true;
+    }
+    return false;
+}
+
+// check if usd symbol exists
+bool exchangeInfo::usdSymbolexists(std::string& key){
+    auto it = usdSymbols.find(key);
+    if (it != usdSymbols.end()) {
+        return true;
+    }
+    return false;
+}
+
+// check if coin symbol exists
+bool exchangeInfo::coinSymbolexists(std::string& key){
+    auto it = coinSymbols.find(key);
+    if (it != coinSymbols.end()) {
+        return true;
+    }
+    return false;
+}
+
 // read config.json for logging, request url, request interval
-void readConfig(std::string configFile, urlInfo& urlConfig, logsInfo& logsConfig) {
+void exchangeInfo::readConfig(std::string configFile, urlInfo& urlConfig, logsInfo& logsConfig) {
 
     spdlog::info("Reading config file: {}", configFile);
     // open config.json
@@ -60,7 +154,7 @@ void readConfig(std::string configFile, urlInfo& urlConfig, logsInfo& logsConfig
     spdlog::info("Config file loaded successfully");
 }
 
-void setSpdLogs(logsInfo& logsConfig){
+void exchangeInfo::setSpdLogs(logsInfo& logsConfig){
 
     // Create a vector of sinks
     std::vector<spdlog::sink_ptr> sinks;
@@ -92,7 +186,7 @@ void setSpdLogs(logsInfo& logsConfig){
 }
 
 // function to make HTTP request and get data
-void fetchData(exchangeInfo& binanceExchange, std::string& baseUrl, std::string& endpoint, urlInfo& urlConfig, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx) {
+void exchangeInfo::fetchData(std::string& baseUrl, std::string& endpoint, urlInfo& urlConfig, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx) {
 
     auto const host = baseUrl.c_str();
     auto const port = "443";
@@ -101,33 +195,31 @@ void fetchData(exchangeInfo& binanceExchange, std::string& baseUrl, std::string&
 
     spdlog::info("Starting async HTTP request to host: {}, endpoint: {}", host, target);
     // Launch the asynchronous operation
-    // The session is constructed with a strand to
-    // ensure that handlers do not execute concurrently.
-    std::make_shared<session>(boost::asio::make_strand(ioc), ctx, binanceExchange, baseUrl, urlConfig)->run(host, port, target, version);
+    // The session is constructed with a strand to ensure that handlers do not execute concurrently.
+    std::make_shared<session>(boost::asio::make_strand(ioc), ctx, this, urlConfig)->get(host, port, target, version);
 
 }
 
-
 // function to perform queries
-void query(exchangeInfo& binanceExchange, std::string& queryMarket, std::string& querySymbol, std::string& queryType, std::string& queryStatus){
+void exchangeInfo::query(std::string& queryMarket, std::string& querySymbol, std::string& queryType, std::string& queryStatus){
 
     spdlog::info("Processing query: Market = {}, Symbol = {}, Type = {}", queryMarket, querySymbol, queryType);
 
     // Check if the symbol exists in any of the markets 
     if(queryMarket == "SPOT"){
-        if(!binanceExchange.spotSymbolexists(querySymbol)){
+        if(!spotSymbolexists(querySymbol)){
             spdlog::error("{}: symbol does not exist", querySymbol);
             return;   
         }
     }
     if(queryMarket == "usd_futures"){
-        if(!binanceExchange.usdSymbolexists(querySymbol)){
+        if(!usdSymbolexists(querySymbol)){
             spdlog::error("{}: symbol does not exist", querySymbol);
             return;   
         }
     }
     if(queryMarket == "coin_futures"){
-        if(!binanceExchange.coinSymbolexists(querySymbol)){
+        if(!coinSymbolexists(querySymbol)){
             spdlog::error("{}: symbol does not exist", querySymbol);
             return;   
         }
@@ -135,9 +227,9 @@ void query(exchangeInfo& binanceExchange, std::string& queryMarket, std::string&
 
     // Retrieve symbol info based on specified market asreference to access original symbol data
     symbolInfo temp;
-    if (queryMarket == "SPOT") { temp = binanceExchange.getSpotSymbol(querySymbol); }
-    if (queryMarket == "usd_futures") { temp = binanceExchange.getUsdSymbol(querySymbol); }
-    if (queryMarket == "coin_futures") { temp = binanceExchange.getCoinSymbol(querySymbol); }
+    if (queryMarket == "SPOT") { temp = getSpotSymbol(querySymbol); }
+    if (queryMarket == "usd_futures") { temp = getUsdSymbol(querySymbol); }
+    if (queryMarket == "coin_futures") { temp = getCoinSymbol(querySymbol); }
     
     // Create a RapidJSON document to store the results
     rapidjson::Document answers;
@@ -170,10 +262,9 @@ void query(exchangeInfo& binanceExchange, std::string& queryMarket, std::string&
         spdlog::info("Updating data for symbol: {}", querySymbol);
 
         if(queryMarket == "SPOT"){
-            spdlog::info("Old Status: {}", temp.status);
-            binanceExchange.updateSpotStatus(querySymbol, queryStatus);
-            temp = binanceExchange.getSpotSymbol(querySymbol);
-            spdlog::info("New Status: {}", temp.status);
+            spdlog::info("Old Status: {}", getSpotSymbol(querySymbol).status);
+            updateSpotStatus(querySymbol, queryStatus);
+            spdlog::info("New Status: {}", getSpotSymbol(querySymbol).status);
 
             rapidjson::Value updateDetails(rapidjson::kObjectType);
             updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
@@ -182,10 +273,9 @@ void query(exchangeInfo& binanceExchange, std::string& queryMarket, std::string&
         }
 
         if(queryMarket == "usd_futures"){
-            spdlog::info("Old Status: {}", temp.status);
-            binanceExchange.updateUsdStatus(querySymbol, queryStatus);
-            temp = binanceExchange.getUsdSymbol(querySymbol);
-            spdlog::info("New Status: {}", temp.status);
+            spdlog::info("Old Status: {}", getUsdSymbol(querySymbol).status);
+            updateUsdStatus(querySymbol, queryStatus);
+            spdlog::info("New Status: {}", getUsdSymbol(querySymbol).status);
 
             rapidjson::Value updateDetails(rapidjson::kObjectType);
             updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
@@ -194,10 +284,9 @@ void query(exchangeInfo& binanceExchange, std::string& queryMarket, std::string&
         }
 
         if(queryMarket == "coin_futures"){
-            spdlog::info("Old Status: {}", temp.status);
-            binanceExchange.updateCoinStatus(querySymbol, queryStatus);
-            temp = binanceExchange.getCoinSymbol(querySymbol);
-            spdlog::info("New Status: {}", temp.status);
+            spdlog::info("Old Status: {}", getCoinSymbol(querySymbol).status);
+            updateCoinStatus(querySymbol, queryStatus);
+            spdlog::info("New Status: {}", getCoinSymbol(querySymbol).status);
 
             rapidjson::Value updateDetails(rapidjson::kObjectType);
             updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
@@ -213,20 +302,20 @@ void query(exchangeInfo& binanceExchange, std::string& queryMarket, std::string&
         spdlog::info("Deleting data for symbol: {}", querySymbol);
         rapidjson::Value deleteDetails(rapidjson::kObjectType);
         if(queryMarket == "SPOT") {
-            binanceExchange.deleteSpotSymbol(querySymbol);
+            deleteSpotSymbol(querySymbol);
             spdlog::info("Deleted symbol {}", querySymbol);
             deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
             answers.AddMember("delete", deleteDetails, allocator);
         } 
 
         else if(queryMarket == "usd_futures") {
-            binanceExchange.deleteUsdSymbol(querySymbol);
+            deleteUsdSymbol(querySymbol);
             spdlog::info("Deleted symbol {}", querySymbol);
             deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
             answers.AddMember("delete", deleteDetails, allocator);
         }
         else if(queryMarket == "coin_futures") {
-            binanceExchange.deleteCoinSymbol(querySymbol);
+            deleteCoinSymbol(querySymbol);
             spdlog::info("Deleted symbol {}", querySymbol);
             deleteDetails.AddMember("deletedSymbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
             answers.AddMember("delete", deleteDetails, allocator);
@@ -255,7 +344,7 @@ void query(exchangeInfo& binanceExchange, std::string& queryMarket, std::string&
 }
 
 // function to continuously read and process queries from query.JSON file
-void readQuery(exchangeInfo& binanceExchange) {
+void exchangeInfo::readQuery() {
 
     // variables to keep track of last query ID for each market type
     std::vector<long long int> prevIDs;
@@ -304,7 +393,7 @@ void readQuery(exchangeInfo& binanceExchange) {
                 }
             }
             if(idFlag == true){
-                query(binanceExchange, queryMarket, querySymbol, queryType, queryStatus);
+                this->query(queryMarket, querySymbol, queryType, queryStatus);
             }
             // Update the last processed query ID
             prevIDs.push_back(queryID);
@@ -312,8 +401,4 @@ void readQuery(exchangeInfo& binanceExchange) {
         // Sleep for 1 sec before reading the file again
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-}
-
-void setLogLevelForBM(){
-        spdlog::set_level(spdlog::level::off);
 }

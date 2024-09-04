@@ -10,7 +10,7 @@
         "id": 21133,
         "query_type": "UPDATE",
         "market_type": "usd_futures",
-        "instrument_name": "BLZUSDT",
+        "instrument_name": "ETHUSD_PERP",
         "data": { 
             "status": "pending" 
         }

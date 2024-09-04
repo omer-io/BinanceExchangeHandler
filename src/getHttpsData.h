@@ -1,10 +1,6 @@
 #ifndef getHttpsData
 #define getHttpsData
 
-#include <cstdlib>
-#include <iostream>
-#include <memory>
-
 #include "example/common/root_certificates.hpp"
 #include "boost/beast/core.hpp"
 #include "boost/beast/http.hpp"
@@ -12,10 +8,6 @@
 #include "boost/asio/ssl.hpp"
 #include "boost/asio/strand.hpp"
 #include "BinanceExchange.h"
-#include "rapidjson/document.h"
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
-#include "spdlog/sinks/basic_file_sink.h"
 
 // Performs an HTTP GET and prints the response
 class session : public std::enable_shared_from_this<session>
@@ -48,10 +40,10 @@ class session : public std::enable_shared_from_this<session>
     void fail(boost::beast::error_code, char const*);
 
 public:
-    session(boost::asio::any_io_executor, boost::asio::ssl::context&, exchangeInfo&, std::string, urlInfo&);
+    session(boost::asio::any_io_executor, boost::asio::ssl::context&, exchangeInfo*, urlInfo&);
 
     // Start the asynchronous operation
-    void run(char const*, char const*, char const*, int);
+    void get(char const*, char const*, char const*, int);
 
 };
 

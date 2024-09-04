@@ -1,22 +1,26 @@
 #include "getHttpsData.h"
 
+#include "spdlog/spdlog.h"
+#include "rapidjson/document.h"
+
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>
 namespace net = boost::asio;            // from <boost/asio.hpp>
 namespace ssl = boost::asio::ssl;       // from <boost/asio/ssl.hpp>
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
-session::session(net::any_io_executor ex, ssl::context& ctx, exchangeInfo& exchangeClass, std::string url, urlInfo& urlConfig) 
-: resolver_(ex), stream_(ex, ctx), binanceExchangeInfo(&exchangeClass), baseUrl(url), baseUrls(urlConfig) {}
+session::session(net::any_io_executor ex, ssl::context& ctx, exchangeInfo* exchangeClass, urlInfo& urlConfig) 
+: resolver_(ex), stream_(ex, ctx), binanceExchangeInfo(exchangeClass), baseUrls(urlConfig) {}
 
     // Start the asynchronous operation
-void session::run( char const* host, char const* port, char const* target, int version)
+void session::get( char const* host, char const* port, char const* target, int version)
 {
+    baseUrl = host;
     // Set SNI Hostname (many hosts need this to handshake successfully)
     if(! SSL_set_tlsext_host_name(stream_.native_handle(), host))
     {
         beast::error_code ec{static_cast<int>(::ERR_get_error()), net::error::get_ssl_category()};
-        spdlog::error("{}\n", ec.message());
+        spdlog::error("{}", ec.message());
         return;
     }
 
