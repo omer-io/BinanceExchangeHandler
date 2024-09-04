@@ -1,7 +1,5 @@
 
 #include <vector>
-#include <map>
-#include <thread>
 #include <mutex>
 
 #include "getHttpsData.h"
@@ -9,8 +7,6 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
-#include "boost/asio.hpp"
-#include "boost/bind/bind.hpp"
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/basic_file_sink.h"

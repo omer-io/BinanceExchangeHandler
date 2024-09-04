@@ -1,18 +1,11 @@
-#include <iostream>
-#include <string>
-#include <vector>
 #include <thread>
 
-#include "rapidjson/document.h"
-#include "rapidjson/filereadstream.h"
 #include "boost/asio.hpp"
 #include "boost/bind/bind.hpp"
 #include "spdlog/spdlog.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
-#include "spdlog/sinks/basic_file_sink.h"
-#include "BinanceExchange.h"
 #include "example/common/root_certificates.hpp"
 #include "boost/asio/ssl.hpp"
+#include "BinanceExchange.h"
 
 // Function to fetch data of all 3 endpoints
 void fetchAll(exchangeInfo& binanceExchange, urlInfo& urlConfig, const boost::system::error_code& /*e*/, boost::asio::steady_timer* t, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx){

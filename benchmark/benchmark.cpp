@@ -11,10 +11,10 @@ logsInfo logsConfig;
 std::string baseUrl, endpoint;
 
 void initializeConfig() {
-    readConfig("config.json", urlConfig, logsConfig);
+    binanceExchange.readConfig("config.json", urlConfig, logsConfig);
     baseUrl = urlConfig.spotExchangeBaseUrl;
     endpoint = urlConfig.spotExchangeEndpoint;
-    setSpdLogs(logsConfig);
+    binanceExchange.setSpdLogs(logsConfig);
 }
 
 // Benchmark for the fetchData function
@@ -24,7 +24,7 @@ static void BMFetchData(benchmark::State& state) {
     load_root_certificates(ctx);
     ctx.set_verify_mode(ssl::verify_peer);
     for (auto _ : state) {
-        fetchData(binanceExchange, baseUrl, endpoint, urlConfig, io, ctx);
+        binanceExchange.fetchData(baseUrl, endpoint, urlConfig, io, ctx);
         io.run();
     }
 }
@@ -34,7 +34,7 @@ BENCHMARK(BMFetchData);
 static void BMQuery(benchmark::State& state) {
     std::string market = "SPOT", symbol = "BTCUSDT", type = "GET", status = "";
     for (auto _ : state) {
-        query(binanceExchange, market, symbol, type, status);
+        binanceExchange.query(market, symbol, type, status);
     }
 }
 BENCHMARK(BMQuery);

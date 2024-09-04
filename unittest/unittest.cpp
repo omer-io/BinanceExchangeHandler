@@ -11,7 +11,7 @@ TEST(fetchDataFunctionTest, validResponse) {
     logsInfo logsConfig;
 
     // read configuration file
-    readConfig("config.json", urlConfig, logsConfig);
+    binanceExchange.readConfig("config.json", urlConfig, logsConfig);
     
     // base URL and endpoint for testing
     std::string baseUrl = urlConfig.spotExchangeBaseUrl;
@@ -23,7 +23,7 @@ TEST(fetchDataFunctionTest, validResponse) {
     ctx.set_verify_mode(ssl::verify_peer);
 
     // Call fetchData 
-    fetchData(binanceExchange, baseUrl, endpoint, urlConfig, io, ctx);
+    binanceExchange.fetchData(baseUrl, endpoint, urlConfig, io, ctx);
     io.run();
 
     // check if symbols > 0
@@ -54,7 +54,7 @@ TEST(queryFunctionTest, updateRequest) {
     std::string queryType = "UPDATE";
     std::string queryStatus = "PENDING";
 
-    query(binanceExchange, market, symbol, queryType, queryStatus);
+    binanceExchange.query(market, symbol, queryType, queryStatus);
 
     EXPECT_EQ(binanceExchange.getSpotSymbol(symbol).status, "PENDING");
 }
@@ -65,7 +65,7 @@ TEST(queryFunctionTest, deleteRequest) {
     logsInfo logsConfig;
 
     // read configuration file
-    readConfig("config.json", urlConfig, logsConfig);
+    binanceExchange.readConfig("config.json", urlConfig, logsConfig);
     
     // base URL and endpoint for testing
     std::string baseUrl = urlConfig.spotExchangeBaseUrl;
@@ -77,7 +77,7 @@ TEST(queryFunctionTest, deleteRequest) {
     ctx.set_verify_mode(ssl::verify_peer);
 
     // Call fetchData 
-    fetchData(binanceExchange, baseUrl, endpoint, urlConfig, io, ctx);
+    binanceExchange.fetchData(baseUrl, endpoint, urlConfig, io, ctx);
     io.run();
 
     // Update status
@@ -86,7 +86,7 @@ TEST(queryFunctionTest, deleteRequest) {
     std::string queryType = "DELETE";
     std::string queryStatus = "";
 
-    query(binanceExchange, market, symbol, queryType, queryStatus);
+    binanceExchange.query(market, symbol, queryType, queryStatus);
     EXPECT_EQ(binanceExchange.spotSymbolexists(symbol), false);
 }
 
