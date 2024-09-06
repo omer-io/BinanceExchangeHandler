@@ -23,7 +23,7 @@ TEST(fetchDataFunctionTest, validResponse) {
     io.run();
 
     // check if symbols > 0
-    EXPECT_GT(binanceExchange.getSpotSymbolsSize(), 0);
+    ASSERT_GT(binanceExchange.getSpotSymbolsSize(), 0);
 
     // check if symbol BTCUSDT has quote asset USDT
     std::string symbolName = "BTCUSDT";
