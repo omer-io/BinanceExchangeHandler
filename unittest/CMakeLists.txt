@@ -3,6 +3,8 @@ project(test)
 
 add_executable(test unittest.cpp)
 
-add_dependencies(test gtest boost rapidjson spdlog)
+add_dependencies(test googletest boost rapidjson spdlog)
 
-target_link_libraries(test gtest BinanceExchange)
+find_package(googletest)
+
+target_link_libraries(test ${GOOGLETEST_BINARY_DIR}/lib/libgtest.a pthread BinanceExchange)
