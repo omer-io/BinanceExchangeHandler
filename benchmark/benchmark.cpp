@@ -36,6 +36,9 @@ BENCHMARK(BMQuery);
 
 // Main function to run benchmarks
 int main() {
+    FILE* answersFile = fopen("answers.json", "w");
+    fputs("[\n]", answersFile);
+    fclose(answersFile);
     // Read configuration file
     initializeConfig();
     benchmark::RunSpecifiedBenchmarks();

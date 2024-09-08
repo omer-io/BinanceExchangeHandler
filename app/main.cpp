@@ -73,7 +73,7 @@ int main() {
     // Run IO context
     io.run();
 
-   // Wait for the readQuery thread to finish
+    // Wait for the readQuery thread to finish
     readQueryThread.join();
     
     return 0;

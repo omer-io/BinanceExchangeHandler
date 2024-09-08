@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.25.1)
+
 find_package(googletest REQUIRED)
+
 project(test)
 
 add_executable(${PROJECT_NAME} unittest.cpp)

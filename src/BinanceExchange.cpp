@@ -263,7 +263,7 @@ void exchangeInfo::query(std::string& queryMarket, std::string& querySymbol, std
         symbolDetails.AddMember("tickSize", rapidjson::Value(temp.tickSize.c_str(), allocator), allocator);
         symbolDetails.AddMember("stepSize", rapidjson::Value(temp.stepSize.c_str(), allocator), allocator);
 
-        answers.AddMember("data", symbolDetails, allocator);
+        answers.AddMember("get", symbolDetails, allocator);
         
     }
 
@@ -273,34 +273,43 @@ void exchangeInfo::query(std::string& queryMarket, std::string& querySymbol, std
         spdlog::info("Updating data for symbol: {}", querySymbol);
 
         if(queryMarket == "SPOT"){
+            rapidjson::Value updateDetails(rapidjson::kObjectType);
+            updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
+            
             spdlog::info("Old Status: {}", getSpotSymbol(querySymbol).status);
+            updateDetails.AddMember("oldstatus", rapidjson::Value(getSpotSymbol(querySymbol).status.c_str(), allocator), allocator);
+
             updateSpotStatus(querySymbol, queryStatus);
             spdlog::info("New Status: {}", getSpotSymbol(querySymbol).status);
 
-            rapidjson::Value updateDetails(rapidjson::kObjectType);
-            updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
             updateDetails.AddMember("newStatus", rapidjson::Value(queryStatus.c_str(), allocator), allocator);
             answers.AddMember("update", updateDetails, allocator);
         }
 
         if(queryMarket == "usd_futures"){
+            rapidjson::Value updateDetails(rapidjson::kObjectType);
+            updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
+
             spdlog::info("Old Status: {}", getUsdSymbol(querySymbol).status);
+            updateDetails.AddMember("oldStatus", rapidjson::Value(getUsdSymbol(querySymbol).status.c_str(), allocator), allocator);
+
             updateUsdStatus(querySymbol, queryStatus);
             spdlog::info("New Status: {}", getUsdSymbol(querySymbol).status);
 
-            rapidjson::Value updateDetails(rapidjson::kObjectType);
-            updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
             updateDetails.AddMember("newStatus", rapidjson::Value(queryStatus.c_str(), allocator), allocator);
             answers.AddMember("update", updateDetails, allocator);
         }
 
         if(queryMarket == "coin_futures"){
+            rapidjson::Value updateDetails(rapidjson::kObjectType);
+            updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
+
             spdlog::info("Old Status: {}", getCoinSymbol(querySymbol).status);
+            updateDetails.AddMember("oldStatus", rapidjson::Value(getCoinSymbol(querySymbol).status.c_str(), allocator), allocator);
+
             updateCoinStatus(querySymbol, queryStatus);
             spdlog::info("New Status: {}", getCoinSymbol(querySymbol).status);
 
-            rapidjson::Value updateDetails(rapidjson::kObjectType);
-            updateDetails.AddMember("symbol", rapidjson::Value(querySymbol.c_str(), allocator), allocator);
             updateDetails.AddMember("newStatus", rapidjson::Value(queryStatus.c_str(), allocator), allocator);
             answers.AddMember("update", updateDetails, allocator);
         }
@@ -338,25 +347,43 @@ void exchangeInfo::query(std::string& queryMarket, std::string& querySymbol, std
     }
     // unlock after performing query    
     binanceExchangeMutex.unlock();
-    // Write to answers.json file
-    FILE* fp2 = fopen("answers.json", "a");
-    if (!fp2) {
-        spdlog::error("Could not open answers.json file for writing.");
+    
+    // Open the file in "r+" mode to read and write
+    FILE* answersFile = fopen("answers.json", "r+");
+    if (!answersFile) {
+        spdlog::error("Could not open answers.json file.");
         return;
     }
+
+    // move to the end of the file and read the last three characters
+    fseek(answersFile, -3, SEEK_END);
+    char lastChar;
+    fread(&lastChar, 1, 1, answersFile);
+
+    // check if the last character is '}' or '[' before the closing ']'
+    if (lastChar == '}') {
+        // Move back one position to overwrite ']' with ','
+        fseek(answersFile, -1, SEEK_END);
+        fputc(',', answersFile);
+    }
+
     char writeBuffer[65536];
-    rapidjson::FileWriteStream os(fp2, writeBuffer, sizeof(writeBuffer));
+    rapidjson::FileWriteStream os(answersFile, writeBuffer, sizeof(writeBuffer));
     rapidjson::Writer<rapidjson::FileWriteStream> writer(os);
     answers.Accept(writer);
 
-    fputs("\n", fp2);
-    fclose(fp2);
+    // Write closing ']' to complete the array
+    fputs("\n]", answersFile);
 
+    fclose(answersFile);
 }
 
 // function to continuously read and process queries from query.JSON file
 void exchangeInfo::readQuery() {
 
+    FILE* answersFile = fopen("answers.json", "w");
+    fputs("[\n]", answersFile);
+    fclose(answersFile);
     // variables to keep track of last query ID for each market type
     std::vector<long long int> prevIDs;
 

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.25.1)
 
-find_package(benchmark)
+find_package(benchmark REQUIRED)
+
 project(benchmarks)
 
 add_executable(${PROJECT_NAME} benchmark.cpp)
