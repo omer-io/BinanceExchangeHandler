@@ -115,7 +115,7 @@ bool exchangeInfo::coinSymbolexists(std::string& key){
 // read config.json for logging, request url, request interval
 void exchangeInfo::readConfig(std::string configFile, urlInfo& urlConfig, logsInfo& logsConfig) {
 
-    spdlog::info("Reading config file: {}", configFile);
+    spdlog::trace("Reading config file: {}", configFile);
     // open config.json
     FILE* fp = fopen(configFile.c_str(), "r"); 
     
@@ -151,10 +151,12 @@ void exchangeInfo::readConfig(std::string configFile, urlInfo& urlConfig, logsIn
     // close file
     fclose(fp); 
 
-    spdlog::info("Config file loaded successfully");
+    spdlog::debug("Config file loaded successfully");
 }
 
 void exchangeInfo::setSpdLogs(logsInfo& logsConfig){
+    
+    spdlog::trace("Starting Logger setup...");
 
     // Create a vector of sinks
     std::vector<spdlog::sink_ptr> sinks;
@@ -162,13 +164,13 @@ void exchangeInfo::setSpdLogs(logsInfo& logsConfig){
     // Add console sink if enabled
     if (logsConfig.console) {
         sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
-        spdlog::info("Console logging enabled");
+        spdlog::debug("Console logging enabled");
     }
 
     // Add file sink if enabled
     if (logsConfig.file) {
         sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/logfile.log", true));
-        spdlog::info("File logging enabled");
+        spdlog::debug("File logging enabled");
     }
 
     // Create logger
@@ -182,7 +184,7 @@ void exchangeInfo::setSpdLogs(logsInfo& logsConfig){
     spdlog::set_default_logger(logger);
     logger->flush_on(spdlog::level::from_str(logsConfig.level));
 
-    spdlog::info("Logger setup completed");
+    spdlog::trace("Logger setup completed");
 }
 
 // function to make HTTP request and get data
@@ -217,6 +219,7 @@ void exchangeInfo::query(std::string& queryMarket, std::string& querySymbol, std
     spdlog::info("Processing query: Market = {}, Symbol = {}, Type = {}", queryMarket, querySymbol, queryType);
 
     // Check if the symbol exists in any of the markets 
+    spdlog::trace("Checking if symbol exists for market: {}", queryMarket);
     if(queryMarket == "SPOT"){
         if(!spotSymbolexists(querySymbol)){
             spdlog::error("{}: symbol does not exist", querySymbol);
@@ -235,12 +238,19 @@ void exchangeInfo::query(std::string& queryMarket, std::string& querySymbol, std
             return;   
         }
     }
+    spdlog::debug("Symbol {} exists in market {}", querySymbol, queryMarket);
 
     // Retrieve symbol info based on specified market asreference to access original symbol data
     symbolInfo temp;
-    if (queryMarket == "SPOT") { temp = getSpotSymbol(querySymbol); }
-    if (queryMarket == "usd_futures") { temp = getUsdSymbol(querySymbol); }
-    if (queryMarket == "coin_futures") { temp = getCoinSymbol(querySymbol); }
+    if (queryMarket == "SPOT") { 
+        temp = getSpotSymbol(querySymbol); 
+    }
+    if (queryMarket == "usd_futures") { 
+        temp = getUsdSymbol(querySymbol); 
+    }
+    if (queryMarket == "coin_futures") { 
+        temp = getCoinSymbol(querySymbol); 
+    }
     
     // Create a RapidJSON document to store the results
     rapidjson::Document answers;
@@ -248,6 +258,7 @@ void exchangeInfo::query(std::string& queryMarket, std::string& querySymbol, std
     auto& allocator = answers.GetAllocator();
     
     // lock while performing query on data structure
+    spdlog::trace("Locking binanceExchangeMutex for query processing.");
     binanceExchangeMutex.lock();
 
     // Process query based on type
@@ -345,7 +356,8 @@ void exchangeInfo::query(std::string& queryMarket, std::string& querySymbol, std
         }
 
     }
-    // unlock after performing query    
+    // unlock after performing query   
+    spdlog::trace("Unlocking binanceExchangeMutex after query processing."); 
     binanceExchangeMutex.unlock();
     
     // Open the file in "r+" mode to read and write
@@ -354,6 +366,7 @@ void exchangeInfo::query(std::string& queryMarket, std::string& querySymbol, std
         spdlog::error("Could not open answers.json file.");
         return;
     }
+    spdlog::trace("Opened answers.json to append query results.");
 
     // move to the end of the file and read the last three characters
     fseek(answersFile, -3, SEEK_END);
@@ -371,25 +384,34 @@ void exchangeInfo::query(std::string& queryMarket, std::string& querySymbol, std
     rapidjson::FileWriteStream os(answersFile, writeBuffer, sizeof(writeBuffer));
     rapidjson::Writer<rapidjson::FileWriteStream> writer(os);
     answers.Accept(writer);
+    spdlog::debug("Appended query results to answers.json.");
 
     // Write closing ']' to complete the array
     fputs("\n]", answersFile);
 
     fclose(answersFile);
+    spdlog::trace("Closed answers.json after writing query results.");
 }
 
 // function to continuously read and process queries from query.JSON file
 void exchangeInfo::readQuery() {
+    spdlog::trace("Starting readQuery function...");
 
     FILE* answersFile = fopen("answers.json", "w");
+    if (!answersFile) {
+        spdlog::error("Error: unable to open answers.json for writing.");
+        return;
+    }
+
     fputs("[\n]", answersFile);
+    spdlog::debug("Created and initialized answers.json file with empty array.");
     fclose(answersFile);
     // variables to keep track of last query ID for each market type
     std::vector<long long int> prevIDs;
 
     // infinite loop to continuously process queries
+    spdlog::trace("Starting query processing loop.");
     while(true){
-
         // Variables to store query details
         long long int queryID;
         std::string queryType, queryMarket, querySymbol, queryStatus;
@@ -419,7 +441,6 @@ void exchangeInfo::readQuery() {
             if (itr->HasMember("data")) {
                 if ((*itr)["data"].HasMember("status")) {
                     queryStatus = (*itr)["data"]["status"].GetString();
-                    // std::cout << "Status: " << queryStatus << std::endl;
                 }
             }
             bool idFlag = true;

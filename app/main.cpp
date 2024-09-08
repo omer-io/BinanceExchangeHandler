@@ -10,7 +10,7 @@
 // Function to fetch data of all 3 endpoints
 void fetchAll(exchangeInfo& binanceExchange, urlInfo& urlConfig, const boost::system::error_code& /*e*/, boost::asio::steady_timer* t, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx){
     
-    spdlog::info("Fetching all data");  
+    spdlog::debug("Fetching all data started...");  
 
     // Call fetch data func to fetch data from each endpoint  
     binanceExchange.fetchData(urlConfig, ioc, ctx);
@@ -18,8 +18,7 @@ void fetchAll(exchangeInfo& binanceExchange, urlInfo& urlConfig, const boost::sy
     // Set the timer to expire in 60 seconds and wait for next fetch
     t->expires_at(t->expiry() + boost::asio::chrono::seconds(urlConfig.requestInterval));
     t->async_wait(boost::bind(fetchAll, std::ref(binanceExchange), std::ref(urlConfig), boost::asio::placeholders::error, t, std::ref(ioc), std::ref(ctx)));
-
-    spdlog::info("Fetch all data completed");    
+  
 }
 
 int main() {
@@ -36,18 +35,20 @@ int main() {
     // set up logging system
     binanceExchange.setSpdLogs(logsConfig);
 
-    spdlog::info("Logging Level: {}", logsConfig.level);
-    spdlog::info("Logging to File: {}", logsConfig.file ? "Enabled" : "Disabled");
-    spdlog::info("Logging to Console: {}", logsConfig.console ? "Enabled" : "Disabled");
+    spdlog::debug("Logging Level: {}", logsConfig.level);
+    spdlog::debug("Logging to File: {}", logsConfig.file ? "Enabled" : "Disabled");
+    spdlog::debug("Logging to Console: {}", logsConfig.console ? "Enabled" : "Disabled");
 
 
-    spdlog::info("Spot Exchange Info base URI: {}", urlConfig.spotExchangeBaseUrl);
-    spdlog::info("USD Futures Exchange Info base URI: {}", urlConfig.usdFutureExchangeBaseUrl);
-    spdlog::info("Coin Futures Exchange Info base URI: {}", urlConfig.coinFutureExchangeBaseUrl);
-    spdlog::info("Spot Exchange Info URI: {}", urlConfig.spotExchangeEndpoint);
-    spdlog::info("USD Futures Exchange Info URI: {}", urlConfig.usdFutureEndpoint);
-    spdlog::info("Coin Futures Exchange Info URI: {}", urlConfig.coinFutureEndpoint);
-    spdlog::info("Request Interval: {} seconds", urlConfig.requestInterval);
+    spdlog::debug("Spot Exchange Info base URI: {}", urlConfig.spotExchangeBaseUrl);
+    spdlog::debug("USD Futures Exchange Info base URI: {}", urlConfig.usdFutureExchangeBaseUrl);
+    spdlog::debug("Coin Futures Exchange Info base URI: {}", urlConfig.coinFutureExchangeBaseUrl);
+    spdlog::debug("Spot Exchange Info URI: {}", urlConfig.spotExchangeEndpoint);
+    spdlog::debug("USD Futures Exchange Info URI: {}", urlConfig.usdFutureEndpoint);
+    spdlog::debug("Coin Futures Exchange Info URI: {}", urlConfig.coinFutureEndpoint);
+    spdlog::debug("Request Interval: {} seconds", urlConfig.requestInterval);
+
+    spdlog::trace("Starting application...");
 
     // thread to run the readQuery function
     std::thread readQueryThread(&exchangeInfo::readQuery, &binanceExchange);

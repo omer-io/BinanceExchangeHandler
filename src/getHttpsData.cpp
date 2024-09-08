@@ -15,6 +15,7 @@ session::session(net::any_io_executor ex, ssl::context& ctx, exchangeInfo* excha
     // Start the asynchronous operation
 void session::get( char const* host, char const* port, char const* target, int version)
 {
+    spdlog::trace("Setting up get request for {} ", host);
     baseUrl = host;
     // Set SNI Hostname (many hosts need this to handshake successfully)
     if(! SSL_set_tlsext_host_name(stream_.native_handle(), host))
@@ -81,6 +82,7 @@ void session::onWrite(beast::error_code ec, std::size_t bytes_transferred)
 
 void session::onRead(beast::error_code ec, std::size_t bytes_transferred)
 {
+    spdlog::trace("Reading http data from {} ", baseUrl);
     boost::ignore_unused(bytes_transferred);
 
     if(ec){
@@ -88,7 +90,7 @@ void session::onRead(beast::error_code ec, std::size_t bytes_transferred)
     }
 
     session::processResponse(res_, binanceExchangeInfo, baseUrl, baseUrls);
-    spdlog::info("HTTP request completed.");
+    spdlog::info("HTTP request of {} completed.", baseUrl);
 
     // Set a timeout on the operation
     beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(40));
@@ -98,7 +100,8 @@ void session::onRead(beast::error_code ec, std::size_t bytes_transferred)
 }
 
 void session::processResponse(http::response<http::string_body>& result,exchangeInfo* binanceExchange, std::string baseUrl, urlInfo& baseUrls){
-        // Parse body of HTTP response as JSON
+    spdlog::trace("Processing http data from {} ", baseUrl);
+    // Parse body of HTTP response as JSON
     rapidjson::Document fullData;
     fullData.Parse(result.body().c_str());
 
@@ -133,16 +136,28 @@ void session::processResponse(http::response<http::string_body>& result,exchange
         }
 
         // Store symbol info in binanceExchange relevant map with symbol name as key
-        if(baseUrl == baseUrls.spotExchangeBaseUrl) { binanceExchange->setSpotSymbol(info.symbol, info); }
-        if(baseUrl == baseUrls.usdFutureExchangeBaseUrl) { binanceExchange->setUsdSymbol(info.symbol, info); }
-        if(baseUrl == baseUrls.coinFutureExchangeBaseUrl) { binanceExchange->setCoinSymbol(info.symbol, info); } 
+        if(baseUrl == baseUrls.spotExchangeBaseUrl) { 
+            binanceExchange->setSpotSymbol(info.symbol, info); 
+        }
+        if(baseUrl == baseUrls.usdFutureExchangeBaseUrl) { 
+            binanceExchange->setUsdSymbol(info.symbol, info); 
+        }
+        if(baseUrl == baseUrls.coinFutureExchangeBaseUrl) { 
+            binanceExchange->setCoinSymbol(info.symbol, info); 
+        } 
    
     }
 
     // Output total number of symbols found
-    if(baseUrl == baseUrls.spotExchangeBaseUrl) { spdlog::info("Total SPOT symbols: {}", binanceExchange->getSpotSymbolsSize()); }
-    if(baseUrl == baseUrls.usdFutureExchangeBaseUrl) { spdlog::info("Total usd futures symbols: {}", binanceExchange->getUsdSymbolsSize()); }
-    if(baseUrl == baseUrls.coinFutureExchangeBaseUrl) { spdlog::info("Total coin futures symbols: {}", binanceExchange->getCoinSymbolsSize());}
+    if(baseUrl == baseUrls.spotExchangeBaseUrl) { 
+        spdlog::info("Total SPOT symbols: {}", binanceExchange->getSpotSymbolsSize()); 
+    }
+    if(baseUrl == baseUrls.usdFutureExchangeBaseUrl) { 
+        spdlog::info("Total usd futures symbols: {}", binanceExchange->getUsdSymbolsSize()); 
+    }
+    if(baseUrl == baseUrls.coinFutureExchangeBaseUrl) { 
+        spdlog::info("Total coin futures symbols: {}", binanceExchange->getCoinSymbolsSize());
+    }
 }
 
 void session::onShutdown(beast::error_code ec)
