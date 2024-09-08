@@ -33,31 +33,31 @@ private:
 
 public:
     // Getter for spotSymbols
-    symbolInfo getSpotSymbol(std::string&);
+    symbolInfo getSpotSymbol(std::string&) const;
 
     // Setter for spotSymbols
     void setSpotSymbol(std::string&, symbolInfo&);
 
     // Getter for usdSymbols
-    symbolInfo getUsdSymbol(std::string&);
+    symbolInfo getUsdSymbol(std::string&) const;
 
     // Setter for usdSymbols
     void setUsdSymbol(std::string&, symbolInfo&);
 
     // Getter for coinSymbols
-    symbolInfo getCoinSymbol(std::string&);
+    symbolInfo getCoinSymbol(std::string&) const;
 
     // Setter for coinSymbols
     void setCoinSymbol( std::string&, symbolInfo&); 
 
     // Function to get the size of spotSymbols
-    size_t getSpotSymbolsSize();
+    size_t getSpotSymbolsSize() const;
 
     // Function to get the size of usdSymbols
-    size_t getUsdSymbolsSize();
+    size_t getUsdSymbolsSize() const;
 
     // Function to get the size of coinSymbols
-    size_t getCoinSymbolsSize();
+    size_t getCoinSymbolsSize() const;
 
     // Func to update status of spotSymbols
     void updateSpotStatus(std::string&, std::string&);
@@ -78,13 +78,13 @@ public:
     void deleteCoinSymbol(std::string&);
 
     // check if spot symbol exists
-    bool spotSymbolexists(std::string&);
+    bool spotSymbolexists(std::string&) const;
 
     // check if usd symbol exists
-    bool usdSymbolexists(std::string&);
+    bool usdSymbolexists(std::string&) const;
 
     // check if coin symbol exists
-    bool coinSymbolexists(std::string&);
+    bool coinSymbolexists(std::string&) const;
 
     // configurations functions
     void readConfig(std::string, urlInfo&, logsInfo&);

@@ -15,7 +15,7 @@
 std::mutex binanceExchangeMutex;
 
 // Getter for spotSymbols
-symbolInfo exchangeInfo::getSpotSymbol( std::string& key) {
+symbolInfo exchangeInfo::getSpotSymbol(std::string& key) const {
     auto it = spotSymbols.find(key);
         return it->second;
 }
@@ -26,7 +26,7 @@ void exchangeInfo::setSpotSymbol(std::string& key, symbolInfo& value) {
 }
 
 // Getter for usdSymbols
-symbolInfo exchangeInfo::getUsdSymbol(std::string& key){
+symbolInfo exchangeInfo::getUsdSymbol(std::string& key) const {
     auto it = usdSymbols.find(key);
         return it->second;
 }
@@ -37,7 +37,7 @@ void exchangeInfo::setUsdSymbol(std::string& key, symbolInfo& value){
 }
 
 // Getter for coinSymbols
-symbolInfo exchangeInfo::getCoinSymbol(std::string& key) {
+symbolInfo exchangeInfo::getCoinSymbol(std::string& key) const {
     auto it = coinSymbols.find(key);
         return it->second;
 }
@@ -48,17 +48,17 @@ void exchangeInfo::setCoinSymbol( std::string& key, symbolInfo& value) {
 }
 
 // Function to get the size of spotSymbols
-size_t exchangeInfo::getSpotSymbolsSize(){
+size_t exchangeInfo::getSpotSymbolsSize() const {
     return spotSymbols.size();
 }
 
 // Function to get the size of usdSymbols
-size_t exchangeInfo::getUsdSymbolsSize(){
+size_t exchangeInfo::getUsdSymbolsSize() const {
     return usdSymbols.size();
 }
 
 // Function to get the size of coinSymbols
-size_t exchangeInfo::getCoinSymbolsSize(){
+size_t exchangeInfo::getCoinSymbolsSize() const {
     return coinSymbols.size();
 }
 
@@ -86,7 +86,7 @@ void exchangeInfo::deleteCoinSymbol(std::string& key){
 }
 
     // check if spot symbol exists
-bool exchangeInfo::spotSymbolexists(std::string& key){
+bool exchangeInfo::spotSymbolexists(std::string& key) const {
     auto it = spotSymbols.find(key);
     if (it != spotSymbols.end()) {
         return true;
@@ -95,7 +95,7 @@ bool exchangeInfo::spotSymbolexists(std::string& key){
 }
 
 // check if usd symbol exists
-bool exchangeInfo::usdSymbolexists(std::string& key){
+bool exchangeInfo::usdSymbolexists(std::string& key) const {
     auto it = usdSymbols.find(key);
     if (it != usdSymbols.end()) {
         return true;
@@ -104,7 +104,7 @@ bool exchangeInfo::usdSymbolexists(std::string& key){
 }
 
 // check if coin symbol exists
-bool exchangeInfo::coinSymbolexists(std::string& key){
+bool exchangeInfo::coinSymbolexists(std::string& key) const {
     auto it = coinSymbols.find(key);
     if (it != coinSymbols.end()) {
         return true;
