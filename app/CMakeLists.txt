@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.25.1)
 project(main)
 
-add_executable(main main.cpp)
+add_executable(${PROJECT_NAME} main.cpp)
 
-add_dependencies(main spdlog rapidjson boost)
+add_dependencies(${PROJECT_NAME} spdlog rapidjson boost)
 
-target_link_libraries(main BinanceExchange)
+target_link_libraries(${PROJECT_NAME} BinanceExchange)

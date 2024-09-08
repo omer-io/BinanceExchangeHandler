@@ -9,13 +9,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules/")
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 
-find_package(spdlog)
-find_package(rapidjson)
-find_package(boost)
-
 link_libraries(${OPENSSL_LIBRARIES})
-
-# add_subdirectory(googletest)
 
 add_subdirectory(src)
 add_subdirectory(app)
