@@ -7,7 +7,7 @@ find_package(OpenSSL REQUIRED)
 
 project(BinanceExchange)
 
-set(LIB_SOURCES BinanceExchange.cpp getHttpsData.cpp)
+file(GLOB LIB_SOURCES BinanceExchange.cpp getHttpsData.cpp)
 add_library(${PROJECT_NAME} STATIC ${LIB_SOURCES})
 
 add_dependencies(${PROJECT_NAME} spdlog rapidjson boost)

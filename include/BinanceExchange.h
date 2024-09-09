@@ -7,8 +7,12 @@
 
 // struct to store base url and endpoints info
 struct urlInfo{
-    std::string spotExchangeBaseUrl, usdFutureExchangeBaseUrl, coinFutureExchangeBaseUrl;
-    std::string spotExchangeEndpoint, usdFutureEndpoint, coinFutureEndpoint;
+    std::string spotExchangeBaseUrl; 
+    std::string usdFutureExchangeBaseUrl;
+    std::string coinFutureExchangeBaseUrl;
+    std::string spotExchangeEndpoint;
+    std::string usdFutureEndpoint;
+    std::string coinFutureEndpoint;
     int requestInterval;
 };
 
@@ -21,15 +25,19 @@ struct logsInfo {
 
 // struct symbolInfo to store required data of symbols
 struct symbolInfo{
-    std::string symbol, quoteAsset, status, tickSize, stepSize;
+    std::string symbol; 
+    std::string quoteAsset; 
+    std::string status; 
+    std::string tickSize; 
+    std::string stepSize;
 };
 
 // class stores symbol info for each endpoint in seperate maps
 class exchangeInfo{
 private:
-    std::map<std::string, symbolInfo> _spotSymbols;
-    std::map<std::string, symbolInfo> _usdSymbols;
-    std::map<std::string, symbolInfo> _coinSymbols;
+    std::unordered_map<std::string, symbolInfo> _spotSymbols;
+    std::unordered_map<std::string, symbolInfo> _usdSymbols;
+    std::unordered_map<std::string, symbolInfo> _coinSymbols;
 
 public:
     // Getter for spotSymbols
