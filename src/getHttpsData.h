@@ -13,14 +13,14 @@
 class session : public std::enable_shared_from_this<session>
 {
     private: 
-    boost::asio::ip::tcp::resolver resolver_;
-    ssl::stream<boost::beast::tcp_stream> stream_;
-    boost::beast::flat_buffer buffer_; // (Must persist between reads)
-    boost::beast::http::request<boost::beast::http::empty_body> req_;
-    boost::beast::http::response<boost::beast::http::string_body> res_;
-    exchangeInfo* binanceExchangeInfo; 
-    std::string baseUrl;
-    urlInfo baseUrls;
+    boost::asio::ip::tcp::resolver _resolver;
+    ssl::stream<boost::beast::tcp_stream> _stream;
+    boost::beast::flat_buffer _buffer; // (Must persist between reads)
+    boost::beast::http::request<boost::beast::http::empty_body> _req;
+    boost::beast::http::response<boost::beast::http::string_body> _res;
+    exchangeInfo* _binanceExchangeInfo; 
+    std::string _baseUrl;
+    urlInfo _baseUrls;
 
     void onResolve(boost::beast::error_code, boost::asio::ip::tcp::resolver::results_type);
 

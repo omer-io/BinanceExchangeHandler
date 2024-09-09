@@ -10,15 +10,15 @@ namespace ssl = boost::asio::ssl;       // from <boost/asio/ssl.hpp>
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
 session::session(net::any_io_executor ex, ssl::context& ctx, exchangeInfo* exchangeClass, urlInfo& urlConfig) 
-: resolver_(ex), stream_(ex, ctx), binanceExchangeInfo(exchangeClass), baseUrls(urlConfig) {}
+: _resolver(ex), _stream(ex, ctx), _binanceExchangeInfo(exchangeClass), _baseUrls(urlConfig) {}
 
     // Start the asynchronous operation
 void session::get( char const* host, char const* port, char const* target, int version)
 {
     spdlog::trace("Setting up get request for {} ", host);
-    baseUrl = host;
+    _baseUrl = host;
     // Set SNI Hostname (many hosts need this to handshake successfully)
-    if(! SSL_set_tlsext_host_name(stream_.native_handle(), host))
+    if(! SSL_set_tlsext_host_name(_stream.native_handle(), host))
     {
         beast::error_code ec{static_cast<int>(::ERR_get_error()), net::error::get_ssl_category()};
         spdlog::error("{}", ec.message());
@@ -26,14 +26,14 @@ void session::get( char const* host, char const* port, char const* target, int v
     }
 
     // Set up an HTTP GET request message
-    req_.version(version);
-    req_.method(http::verb::get);
-    req_.target(target);
-    req_.set(http::field::host, host);
-    req_.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+    _req.version(version);
+    _req.method(http::verb::get);
+    _req.target(target);
+    _req.set(http::field::host, host);
+    _req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
 
     // Look up the domain name
-    resolver_.async_resolve(host, port, beast::bind_front_handler(&session::onResolve, shared_from_this()));
+    _resolver.async_resolve(host, port, beast::bind_front_handler(&session::onResolve, shared_from_this()));
 }
 
 void session::onResolve(beast::error_code ec, tcp::resolver::results_type results)
@@ -42,10 +42,10 @@ void session::onResolve(beast::error_code ec, tcp::resolver::results_type result
         return session::fail(ec, "resolve");
     }
     // Set a timeout on the operation
-    beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(40));
+    beast::get_lowest_layer(_stream).expires_after(std::chrono::seconds(40));
 
     // Make the connection on the IP address we get from a lookup
-    beast::get_lowest_layer(stream_).async_connect(results, beast::bind_front_handler(&session::onConnect, shared_from_this()));
+    beast::get_lowest_layer(_stream).async_connect(results, beast::bind_front_handler(&session::onConnect, shared_from_this()));
 }
 
 void session::onConnect(beast::error_code ec, tcp::resolver::results_type::endpoint_type)
@@ -54,7 +54,7 @@ void session::onConnect(beast::error_code ec, tcp::resolver::results_type::endpo
         return session::fail(ec, "connect");
     }
     // Perform the SSL handshake
-    stream_.async_handshake(ssl::stream_base::client, beast::bind_front_handler(&session::onHandshake, shared_from_this()));
+    _stream.async_handshake(ssl::stream_base::client, beast::bind_front_handler(&session::onHandshake, shared_from_this()));
 }
 
 void session::onHandshake(beast::error_code ec)
@@ -63,10 +63,10 @@ void session::onHandshake(beast::error_code ec)
         return session::fail(ec, "handshake");
     }
     // Set a timeout on the operation
-    beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(40));
+    beast::get_lowest_layer(_stream).expires_after(std::chrono::seconds(40));
 
     // Send the HTTP request to the remote host
-    http::async_write(stream_, req_, beast::bind_front_handler(&session::onWrite, shared_from_this()));
+    http::async_write(_stream, _req, beast::bind_front_handler(&session::onWrite, shared_from_this()));
 }
 
 void session::onWrite(beast::error_code ec, std::size_t bytes_transferred)
@@ -77,26 +77,26 @@ void session::onWrite(beast::error_code ec, std::size_t bytes_transferred)
         return session::fail(ec, "write");
     }
     // Receive the HTTP response
-    http::async_read(stream_, buffer_, res_, beast::bind_front_handler(&session::onRead, shared_from_this()));
+    http::async_read(_stream, _buffer, _res, beast::bind_front_handler(&session::onRead, shared_from_this()));
 }
 
 void session::onRead(beast::error_code ec, std::size_t bytes_transferred)
 {
-    spdlog::trace("Reading http data from {} ", baseUrl);
+    spdlog::trace("Reading http data from {} ", _baseUrl);
     boost::ignore_unused(bytes_transferred);
 
     if(ec){
         return session::fail(ec, "read");
     }
 
-    session::processResponse(res_, binanceExchangeInfo, baseUrl, baseUrls);
-    spdlog::info("HTTP request of {} completed.", baseUrl);
+    session::processResponse(_res, _binanceExchangeInfo, _baseUrl, _baseUrls);
+    spdlog::info("HTTP request of {} completed.", _baseUrl);
 
     // Set a timeout on the operation
-    beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(40));
+    beast::get_lowest_layer(_stream).expires_after(std::chrono::seconds(40));
 
     // Gracefully close the stream
-    stream_.async_shutdown(beast::bind_front_handler(&session::onShutdown, shared_from_this()));
+    _stream.async_shutdown(beast::bind_front_handler(&session::onShutdown, shared_from_this()));
 }
 
 void session::processResponse(http::response<http::string_body>& result,exchangeInfo* binanceExchange, std::string baseUrl, urlInfo& baseUrls){
