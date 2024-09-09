@@ -27,28 +27,28 @@ struct symbolInfo{
 // class stores symbol info for each endpoint in seperate maps
 class exchangeInfo{
 private:
-    std::map<std::string, symbolInfo> spotSymbols;
-    std::map<std::string, symbolInfo> usdSymbols;
-    std::map<std::string, symbolInfo> coinSymbols;
+    std::map<std::string, symbolInfo> _spotSymbols;
+    std::map<std::string, symbolInfo> _usdSymbols;
+    std::map<std::string, symbolInfo> _coinSymbols;
 
 public:
     // Getter for spotSymbols
-    symbolInfo getSpotSymbol(std::string&) const;
+    symbolInfo getSpotSymbol(const std::string&) const;
 
     // Setter for spotSymbols
-    void setSpotSymbol(std::string&, symbolInfo&);
+    void setSpotSymbol(const std::string&, const symbolInfo&);
 
     // Getter for usdSymbols
-    symbolInfo getUsdSymbol(std::string&) const;
+    symbolInfo getUsdSymbol(const std::string&) const;
 
     // Setter for usdSymbols
-    void setUsdSymbol(std::string&, symbolInfo&);
+    void setUsdSymbol(const std::string&, const symbolInfo&);
 
     // Getter for coinSymbols
-    symbolInfo getCoinSymbol(std::string&) const;
+    symbolInfo getCoinSymbol(const std::string&) const;
 
     // Setter for coinSymbols
-    void setCoinSymbol( std::string&, symbolInfo&); 
+    void setCoinSymbol(const  std::string&, const symbolInfo&); 
 
     // Function to get the size of spotSymbols
     size_t getSpotSymbolsSize() const;
@@ -60,31 +60,31 @@ public:
     size_t getCoinSymbolsSize() const;
 
     // Func to update status of spotSymbols
-    void updateSpotStatus(std::string&, std::string&);
+    void updateSpotStatus(const std::string&, const std::string&);
     
     // Func to update status of usdSymbols
-    void updateUsdStatus(std::string&, std::string&);
+    void updateUsdStatus(const std::string&, const std::string&);
 
     // Func to update status of coinSymbols
-    void updateCoinStatus(std::string&, std::string&);
+    void updateCoinStatus(const std::string&, const std::string&);
 
     // Func to delete a spot symbol
-    void deleteSpotSymbol(std::string&);
+    void deleteSpotSymbol(const std::string&);
 
     // Func to delete a USD futures symbol
-    void deleteUsdSymbol(std::string&);
+    void deleteUsdSymbol(const std::string&);
 
     // Func to delete a coin futures symbol
-    void deleteCoinSymbol(std::string&);
+    void deleteCoinSymbol(const std::string&);
 
     // check if spot symbol exists
-    bool spotSymbolexists(std::string&) const;
+    bool spotSymbolexists(const std::string&) const;
 
     // check if usd symbol exists
-    bool usdSymbolexists(std::string&) const;
+    bool usdSymbolexists(const std::string&) const;
 
     // check if coin symbol exists
-    bool coinSymbolexists(std::string&) const;
+    bool coinSymbolexists(const std::string&) const;
 
     // configurations functions
     void readConfig(std::string, urlInfo&, logsInfo&);
