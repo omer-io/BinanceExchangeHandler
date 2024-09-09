@@ -8,7 +8,7 @@
 #include "BinanceExchange.h"
 
 // Function to fetch data of all 3 endpoints
-void fetchAll(exchangeInfo& binanceExchange, urlInfo& urlConfig, const boost::system::error_code& /*e*/, boost::asio::steady_timer* t, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx){
+void fetchAll(exchangeInfo& binanceExchange, urlInfo& urlConfig, const boost::system::error_code& /*e*/, boost::asio::steady_timer* timer1, boost::asio::io_context& ioc, boost::asio::ssl::context& ctx){
     
     spdlog::debug("Fetching all data started...");  
 
@@ -16,8 +16,8 @@ void fetchAll(exchangeInfo& binanceExchange, urlInfo& urlConfig, const boost::sy
     binanceExchange.fetchData(urlConfig, ioc, ctx);
 
     // Set the timer to expire in 60 seconds and wait for next fetch
-    t->expires_at(t->expiry() + boost::asio::chrono::seconds(urlConfig.requestInterval));
-    t->async_wait(boost::bind(fetchAll, std::ref(binanceExchange), std::ref(urlConfig), boost::asio::placeholders::error, t, std::ref(ioc), std::ref(ctx)));
+    timer1->expires_at(timer1->expiry() + boost::asio::chrono::seconds(urlConfig.requestInterval));
+    timer1->async_wait(boost::bind(fetchAll, std::ref(binanceExchange), std::ref(urlConfig), boost::asio::placeholders::error, timer1, std::ref(ioc), std::ref(ctx)));
   
 }
 
@@ -66,10 +66,10 @@ int main() {
     ctx.set_verify_mode(ssl::verify_peer);
 
     // timer to fetch data every 60 sec
-    boost::asio::steady_timer t(io, boost::asio::chrono::seconds(urlConfig.requestInterval));
+    boost::asio::steady_timer timer1(io, boost::asio::chrono::seconds(urlConfig.requestInterval));
 
     // call back fetchAll function when timer expires
-    t.async_wait(boost::bind(fetchAll, std::ref(binanceExchange), std::ref(urlConfig), boost::asio::placeholders::error, &t, std::ref(io), std::ref(ctx)));
+    timer1.async_wait(boost::bind(fetchAll, std::ref(binanceExchange), std::ref(urlConfig), boost::asio::placeholders::error, &timer1, std::ref(io), std::ref(ctx)));
 
     // Run IO context
     io.run();
