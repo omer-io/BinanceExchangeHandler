@@ -266,7 +266,7 @@ void exchangeInfo::processQuery(std::string& queryMarket, std::string& querySymb
         if (queryMarket == "coin_futures") { 
             temp = getCoinSymbol(querySymbol); 
         }
-        
+
         rapidjson::Value symbolDetails(rapidjson::kObjectType);
         symbolDetails.AddMember("symbol", rapidjson::Value(temp.symbol.c_str(), allocator), allocator);
         symbolDetails.AddMember("quoteAsset", rapidjson::Value(temp.quoteAsset.c_str(), allocator), allocator);
@@ -413,7 +413,7 @@ void exchangeInfo::readQuery() {
     spdlog::trace("Starting query processing loop.");
     while(true){
         // Variables to store query details
-        long long int queryID;
+        unsigned long long int queryID;
         std::string queryType, queryMarket, querySymbol, queryStatus;
 
         // Load and parse the JSON query file
@@ -422,17 +422,24 @@ void exchangeInfo::readQuery() {
         FILE* fileQuery = fopen(queryFile.c_str(), "r"); 
         if (!fileQuery) { 
             spdlog::error("Error: unable to open file {}", queryFile);
+            continue;  // Retry in next iteration
         } 
 
         char buffer[65536];
         rapidjson::FileReadStream is(fileQuery, buffer, sizeof(buffer));
-        doc.ParseStream(is);
+
+        // Try to parse the JSON
+        if (doc.ParseStream(is).HasParseError()) {
+            fclose(fileQuery);
+            continue;  // Retry in next iteration
+        }
+        
         fclose(fileQuery); 
 
         // Process each query 
         for (rapidjson::Value::ConstValueIterator itr = doc["query"].Begin(); itr != doc["query"].End(); ++itr) {
             // Extract query details
-            int queryID = (*itr)["id"].GetInt();
+            unsigned long long int queryID = (*itr)["id"].GetUint64();
             std::string queryType = (*itr)["query_type"].GetString();
             std::string queryMarket = (*itr)["market_type"].GetString();
             std::string querySymbol = (*itr)["instrument_name"].GetString();
@@ -457,7 +464,5 @@ void exchangeInfo::readQuery() {
             // Update the last processed query ID
             prevIDs.push_back(queryID);
         }
-        // Sleep for 1 sec before reading the file again
-        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }

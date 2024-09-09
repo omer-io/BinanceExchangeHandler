@@ -108,6 +108,7 @@ void session::processResponse(http::response<http::string_body>& result,exchange
     // Check if parsed data is object and contains symbols array
     if (!fullData.IsObject() || !fullData.HasMember("symbols") || !fullData["symbols"].IsArray()) {
         spdlog::error("Invalid JSON format or missing symbols array.");
+        return;
     }
 
     // Access the "symbols" array
