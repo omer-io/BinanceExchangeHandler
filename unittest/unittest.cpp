@@ -27,6 +27,7 @@ TEST(fetchDataFunctionTest, validResponse) {
 
     // check if symbol BTCUSDT has quote asset USDT
     std::string symbolName = "BTCUSDT";
+    ASSERT_EQ(binanceExchange.spotSymbolexists(symbolName), true);
     EXPECT_EQ(binanceExchange.getSpotSymbol(symbolName).quoteAsset, "USDT");
 }
 
