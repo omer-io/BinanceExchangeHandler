@@ -15,7 +15,7 @@
 std::mutex binanceExchangeMutex;
 
 // Getter for spotSymbols
-symbolInfo exchangeInfo::getSpotSymbol(const std::string& key) const {
+const symbolInfo exchangeInfo::getSpotSymbol(const std::string& key) const {
     auto it = _spotSymbols.find(key);
         return it->second;
 }
@@ -26,7 +26,7 @@ void exchangeInfo::setSpotSymbol(const std::string& key, const symbolInfo& value
 }
 
 // Getter for usdSymbols
-symbolInfo exchangeInfo::getUsdSymbol(const std::string& key) const {
+const symbolInfo exchangeInfo::getUsdSymbol(const std::string& key) const {
     auto it = _usdSymbols.find(key);
         return it->second;
 }
@@ -37,7 +37,7 @@ void exchangeInfo::setUsdSymbol(const std::string& key, const symbolInfo& value)
 }
 
 // Getter for coinSymbols
-symbolInfo exchangeInfo::getCoinSymbol(const std::string& key) const {
+const symbolInfo exchangeInfo::getCoinSymbol(const std::string& key) const {
     auto it = _coinSymbols.find(key);
         return it->second;
 }
@@ -48,17 +48,17 @@ void exchangeInfo::setCoinSymbol(const  std::string& key, const symbolInfo& valu
 }
 
 // Function to get the size of spotSymbols
-size_t exchangeInfo::getSpotSymbolsSize() const {
+const size_t exchangeInfo::getSpotSymbolsSize() const {
     return _spotSymbols.size();
 }
 
 // Function to get the size of usdSymbols
-size_t exchangeInfo::getUsdSymbolsSize() const {
+const size_t exchangeInfo::getUsdSymbolsSize() const {
     return _usdSymbols.size();
 }
 
 // Function to get the size of coinSymbols
-size_t exchangeInfo::getCoinSymbolsSize() const {
+const size_t exchangeInfo::getCoinSymbolsSize() const {
     return _coinSymbols.size();
 }
 
@@ -85,7 +85,7 @@ void exchangeInfo::deleteCoinSymbol(const std::string& key){
     _coinSymbols.erase(key);
 }
 
-    // check if spot symbol exists
+// check if spot symbol exists
 bool exchangeInfo::spotSymbolexists(const std::string& key) const {
     auto it = _spotSymbols.find(key);
     if (it != _spotSymbols.end()) {
@@ -239,18 +239,6 @@ void exchangeInfo::processQuery(std::string& queryMarket, std::string& querySymb
         }
     }
     spdlog::debug("Symbol {} exists in market {}", querySymbol, queryMarket);
-
-    // Retrieve symbol info based on specified market asreference to access original symbol data
-    symbolInfo temp;
-    if (queryMarket == "SPOT") { 
-        temp = getSpotSymbol(querySymbol); 
-    }
-    if (queryMarket == "usd_futures") { 
-        temp = getUsdSymbol(querySymbol); 
-    }
-    if (queryMarket == "coin_futures") { 
-        temp = getCoinSymbol(querySymbol); 
-    }
     
     // Create a RapidJSON document to store the results
     rapidjson::Document answers;
@@ -267,6 +255,18 @@ void exchangeInfo::processQuery(std::string& queryMarket, std::string& querySymb
         // GET request: retrieve and output symbol to answers.json
         spdlog::info("Getting spot data for {}", querySymbol);
 
+        // Retrieve symbol info based on specified market
+        symbolInfo temp;
+        if (queryMarket == "SPOT") { 
+            temp = getSpotSymbol(querySymbol); 
+        }
+        if (queryMarket == "usd_futures") { 
+            temp = getUsdSymbol(querySymbol); 
+        }
+        if (queryMarket == "coin_futures") { 
+            temp = getCoinSymbol(querySymbol); 
+        }
+        
         rapidjson::Value symbolDetails(rapidjson::kObjectType);
         symbolDetails.AddMember("symbol", rapidjson::Value(temp.symbol.c_str(), allocator), allocator);
         symbolDetails.AddMember("quoteAsset", rapidjson::Value(temp.quoteAsset.c_str(), allocator), allocator);

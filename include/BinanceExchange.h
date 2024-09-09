@@ -41,31 +41,31 @@ private:
 
 public:
     // Getter for spotSymbols
-    symbolInfo getSpotSymbol(const std::string&) const;
+    const symbolInfo getSpotSymbol(const std::string&) const;
 
     // Setter for spotSymbols
     void setSpotSymbol(const std::string&, const symbolInfo&);
 
     // Getter for usdSymbols
-    symbolInfo getUsdSymbol(const std::string&) const;
+    const symbolInfo getUsdSymbol(const std::string&) const;
 
     // Setter for usdSymbols
     void setUsdSymbol(const std::string&, const symbolInfo&);
 
     // Getter for coinSymbols
-    symbolInfo getCoinSymbol(const std::string&) const;
+    const symbolInfo getCoinSymbol(const std::string&) const;
 
     // Setter for coinSymbols
     void setCoinSymbol(const  std::string&, const symbolInfo&); 
 
     // Function to get the size of spotSymbols
-    size_t getSpotSymbolsSize() const;
+    const size_t getSpotSymbolsSize() const;
 
     // Function to get the size of usdSymbols
-    size_t getUsdSymbolsSize() const;
+    const size_t getUsdSymbolsSize() const;
 
     // Function to get the size of coinSymbols
-    size_t getCoinSymbolsSize() const;
+    const size_t getCoinSymbolsSize() const;
 
     // Func to update status of spotSymbols
     void updateSpotStatus(const std::string&, const std::string&);

@@ -84,9 +84,11 @@ TEST(queryFunctionTest, deleteRequest) {
 }
 
 int main() {
+    // initialize answers file
     FILE* answersFile = fopen("answers.json", "w");
     fputs("[\n]", answersFile);
     fclose(answersFile);
+    // initialize tests
     testing::InitGoogleTest();
     return RUN_ALL_TESTS();
 }
