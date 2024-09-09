@@ -117,17 +117,17 @@ void exchangeInfo::readConfig(std::string configFile, urlInfo& urlConfig, logsIn
 
     spdlog::trace("Reading config file: {}", configFile);
     // open config.json
-    FILE* fp = fopen(configFile.c_str(), "r"); 
+    FILE* fileConfig = fopen(configFile.c_str(), "r"); 
     
     // throw error if file not opened
-    if (!fp) { 
+    if (!fileConfig) { 
         spdlog::error("Error: unable to open file");
     } 
 
     rapidjson::Document doc;
 
     char buffer[65536];
-    rapidjson::FileReadStream is(fp, buffer, sizeof(buffer));
+    rapidjson::FileReadStream is(fileConfig, buffer, sizeof(buffer));
 
     // parse json data
     doc.ParseStream(is);
@@ -149,7 +149,7 @@ void exchangeInfo::readConfig(std::string configFile, urlInfo& urlConfig, logsIn
     logsConfig.console = doc["logging"]["console"].GetBool();
 
     // close file
-    fclose(fp); 
+    fclose(fileConfig); 
 
     spdlog::debug("Config file loaded successfully");
 }
@@ -419,15 +419,15 @@ void exchangeInfo::readQuery() {
         // Load and parse the JSON query file
         rapidjson::Document doc;
         std::string queryFile = "query.json";
-        FILE* fp = fopen(queryFile.c_str(), "r"); 
-        if (!fp) { 
+        FILE* fileQuery = fopen(queryFile.c_str(), "r"); 
+        if (!fileQuery) { 
             spdlog::error("Error: unable to open file {}", queryFile);
         } 
 
         char buffer[65536];
-        rapidjson::FileReadStream is(fp, buffer, sizeof(buffer));
+        rapidjson::FileReadStream is(fileQuery, buffer, sizeof(buffer));
         doc.ParseStream(is);
-        fclose(fp); 
+        fclose(fileQuery); 
 
         // Process each query 
         for (rapidjson::Value::ConstValueIterator itr = doc["query"].Begin(); itr != doc["query"].End(); ++itr) {
