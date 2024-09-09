@@ -214,7 +214,7 @@ void exchangeInfo::fetchData(urlInfo& urlConfig, boost::asio::io_context& ioc, b
 }
 
 // function to perform queries
-void exchangeInfo::query(std::string& queryMarket, std::string& querySymbol, std::string& queryType, std::string& queryStatus){
+void exchangeInfo::processQuery(std::string& queryMarket, std::string& querySymbol, std::string& queryType, std::string& queryStatus){
 
     spdlog::info("Processing query: Market = {}, Symbol = {}, Type = {}", queryMarket, querySymbol, queryType);
 
@@ -452,7 +452,7 @@ void exchangeInfo::readQuery() {
                 }
             }
             if(idFlag == true){
-                this->query(queryMarket, querySymbol, queryType, queryStatus);
+                this->processQuery(queryMarket, querySymbol, queryType, queryStatus);
             }
             // Update the last processed query ID
             prevIDs.push_back(queryID);

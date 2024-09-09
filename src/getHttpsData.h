@@ -1,5 +1,5 @@
-#ifndef getHttpsData
-#define getHttpsData
+#ifndef getHttpsData_H
+#define getHttpsData_H
 
 #include "example/common/root_certificates.hpp"
 #include "boost/beast/core.hpp"
@@ -47,4 +47,4 @@ public:
 
 };
 
-#endif // getHttpsData
+#endif // getHttpsData_H

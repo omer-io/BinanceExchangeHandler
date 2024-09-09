@@ -1,7 +1,7 @@
 #include "benchmark/benchmark.h"
 #include "BinanceExchange.h"
 #include "example/common/root_certificates.hpp"
-#include <boost/asio/ssl.hpp>
+#include "boost/asio/ssl.hpp"
 
 exchangeInfo binanceExchange;
 urlInfo urlConfig;
@@ -29,17 +29,19 @@ BENCHMARK(BMFetchData);
 static void BMQuery(benchmark::State& state) {
     std::string market = "SPOT", symbol = "BTCUSDT", type = "GET", status = "";
     for (auto _ : state) {
-        binanceExchange.query(market, symbol, type, status);
+        binanceExchange.processQuery(market, symbol, type, status);
     }
 }
 BENCHMARK(BMQuery);
 
 // Main function to run benchmarks
 int main() {
+    // Initialize answers.json file
     FILE* answersFile = fopen("answers.json", "w");
     fputs("[\n]", answersFile);
     fclose(answersFile);
     // Read configuration file
     initializeConfig();
+    // Run benchmarks
     benchmark::RunSpecifiedBenchmarks();
 }

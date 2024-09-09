@@ -51,7 +51,7 @@ TEST(queryFunctionTest, updateRequest) {
     std::string queryType = "UPDATE";
     std::string queryStatus = "PENDING";
 
-    binanceExchange.query(market, symbol, queryType, queryStatus);
+    binanceExchange.processQuery(market, symbol, queryType, queryStatus);
 
     EXPECT_EQ(binanceExchange.getSpotSymbol(symbol).status, "PENDING");
 }
@@ -79,7 +79,7 @@ TEST(queryFunctionTest, deleteRequest) {
     std::string queryType = "DELETE";
     std::string queryStatus = "";
 
-    binanceExchange.query(market, symbol, queryType, queryStatus);
+    binanceExchange.processQuery(market, symbol, queryType, queryStatus);
     EXPECT_EQ(binanceExchange.spotSymbolexists(symbol), false);
 }
 

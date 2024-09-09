@@ -1,5 +1,5 @@
-#ifndef BinanceExchange
-#define BinanceExchange
+#ifndef BinanceExchange_H
+#define BinanceExchange_H
 
 #include <map>
 #include <string>
@@ -95,11 +95,11 @@ public:
     bool coinSymbolexists(const std::string&) const;
 
     // configurations functions
-    void readConfig(std::string, urlInfo&, logsInfo&);
-    void setSpdLogs(logsInfo&);
-    void fetchData(urlInfo&, boost::asio::io_context&, boost::asio::ssl::context&);
-    void readQuery();
-    void query(std::string&, std::string&, std::string&, std::string&);
+    void readConfig(std::string, urlInfo&, logsInfo&);  // Read config file for url info and logs info
+    void setSpdLogs(logsInfo&); // set logging level and file/console enabling
+    void fetchData(urlInfo&, boost::asio::io_context&, boost::asio::ssl::context&); // get symbols data from endpoints
+    void readQuery();   // read query file continously
+    void processQuery(std::string&, std::string&, std::string&, std::string&); // process query
 };
 
-#endif // BinanceExchange
+#endif // BinanceExchange_H
