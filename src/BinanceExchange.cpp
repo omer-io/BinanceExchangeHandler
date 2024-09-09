@@ -3,6 +3,7 @@
 #include <mutex>
 
 #include "getHttpsData.h"
+#include "boost/asio/strand.hpp"
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/document.h"

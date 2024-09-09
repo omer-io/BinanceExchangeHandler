@@ -89,7 +89,7 @@ void session::onRead(beast::error_code ec, std::size_t bytes_transferred)
         return session::fail(ec, "read");
     }
 
-    session::processResponse(_res, _binanceExchangeInfo, _baseUrl, _baseUrls);
+    this->processResponse();
     spdlog::info("HTTP request of {} completed.", _baseUrl);
 
     // Set a timeout on the operation
@@ -99,11 +99,11 @@ void session::onRead(beast::error_code ec, std::size_t bytes_transferred)
     _stream.async_shutdown(beast::bind_front_handler(&session::onShutdown, shared_from_this()));
 }
 
-void session::processResponse(http::response<http::string_body>& result,exchangeInfo* binanceExchange, std::string baseUrl, urlInfo& baseUrls){
-    spdlog::trace("Processing http data from {} ", baseUrl);
+void session::processResponse(){
+    spdlog::trace("Processing http data from {} ", _baseUrl);
     // Parse body of HTTP response as JSON
     rapidjson::Document fullData;
-    fullData.Parse(result.body().c_str());
+    fullData.Parse(_res.body().c_str());
 
     // Check if parsed data is object and contains symbols array
     if (!fullData.IsObject() || !fullData.HasMember("symbols") || !fullData["symbols"].IsArray()) {
@@ -137,27 +137,27 @@ void session::processResponse(http::response<http::string_body>& result,exchange
         }
 
         // Store symbol info in binanceExchange relevant map with symbol name as key
-        if(baseUrl == baseUrls.spotExchangeBaseUrl) { 
-            binanceExchange->setSpotSymbol(info.symbol, info); 
+        if(_baseUrl == _baseUrls.spotExchangeBaseUrl) { 
+            _binanceExchangeInfo->setSpotSymbol(info.symbol, info); 
         }
-        if(baseUrl == baseUrls.usdFutureExchangeBaseUrl) { 
-            binanceExchange->setUsdSymbol(info.symbol, info); 
+        if(_baseUrl == _baseUrls.usdFutureExchangeBaseUrl) { 
+            _binanceExchangeInfo->setUsdSymbol(info.symbol, info); 
         }
-        if(baseUrl == baseUrls.coinFutureExchangeBaseUrl) { 
-            binanceExchange->setCoinSymbol(info.symbol, info); 
+        if(_baseUrl == _baseUrls.coinFutureExchangeBaseUrl) { 
+            _binanceExchangeInfo->setCoinSymbol(info.symbol, info); 
         } 
    
     }
 
     // Output total number of symbols found
-    if(baseUrl == baseUrls.spotExchangeBaseUrl) { 
-        spdlog::info("Total SPOT symbols: {}", binanceExchange->getSpotSymbolsSize()); 
+    if(_baseUrl == _baseUrls.spotExchangeBaseUrl) { 
+        spdlog::info("Total SPOT symbols: {}", _binanceExchangeInfo->getSpotSymbolsSize()); 
     }
-    if(baseUrl == baseUrls.usdFutureExchangeBaseUrl) { 
-        spdlog::info("Total usd futures symbols: {}", binanceExchange->getUsdSymbolsSize()); 
+    if(_baseUrl == _baseUrls.usdFutureExchangeBaseUrl) { 
+        spdlog::info("Total usd futures symbols: {}", _binanceExchangeInfo->getUsdSymbolsSize()); 
     }
-    if(baseUrl == baseUrls.coinFutureExchangeBaseUrl) { 
-        spdlog::info("Total coin futures symbols: {}", binanceExchange->getCoinSymbolsSize());
+    if(_baseUrl == _baseUrls.coinFutureExchangeBaseUrl) { 
+        spdlog::info("Total coin futures symbols: {}", _binanceExchangeInfo->getCoinSymbolsSize());
     }
 }
 

@@ -22,10 +22,11 @@ To build and run the project locally, follow these steps:
 4. Copy config.json and query.json into build: `cp config.json query.json build/`
 5. Navigate to the build directory: `cd build`
 6. Run CMake: `cmake ..`
-7. Build the project: `make`
-8. Run main app: `./app/main`
-9. Run benchmarks: `./benchmark/benchmarks`
-10. Run unit tests: `./unittest/test`
+7. To disable tests and benchmarks run CMake with options: `cmake .. -DBUILD_TESTS=OFF -DBUILD_BENCHMARKS=OFF`
+8. Build the project: `make`
+9. Run main app: `./app/main`
+10. Run benchmarks: `./benchmark/benchmarks`
+11. Run unit tests: `./unittest/test`
 
 
 To build and run the project in container, follow these steps:
@@ -38,7 +39,8 @@ To build and run the project in container, follow these steps:
 6. Copy config.json and query.json into build: `cp config.json query.json build/`
 7. Navigate to the build directory: `cd build`
 8. Run CMake: `cmake ..`
-9. Build the project: `make`
-10. Run main app: `./app/main`
-11. Run benchmarks: `./benchmark/benchmarks`
-12. Run unit tests: `./unittest/test`
+9. To disable tests and benchmarks run CMake with options: `cmake .. -DBUILD_TESTS=OFF -DBUILD_BENCHMARKS=OFF`
+10. Build the project: `make`
+11. Run main app: `./app/main`
+12. Run benchmarks: `./benchmark/benchmarks`
+13. Run unit tests: `./unittest/test`
